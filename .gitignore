@@ -1,0 +1,10 @@
+*.geojson
+*.mbtiles
+*_esri.json
+*.json.bak
+role2026_gpkg/
+ROLE2026_GEOPACKAGE.zip
+.venv/
+__pycache__/
+*.pyc
+.DS_Store

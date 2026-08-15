@@ -1,0 +1,1268 @@
+/* =====================================================================
+   Refonte visuelle : police Raleway + look plus moderne
+   ===================================================================== */
+
+/* La variable --font-sans est déjà utilisée partout dans le projet (styles.css et
+   dans le HTML généré en JS) — la redéfinir ici la propage automatiquement à tout
+   le site, sans avoir à toucher styles.css. */
+:root {
+  --font-sans: 'Raleway', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  /* Palette de marque */
+  --color-text-primary: #2D3136;
+  --color-brand-blue: #2277B5;
+}
+
+body:not(.dark-theme) {
+  background: #FFFFFF;
+}
+body:not(.dark-theme) .gt-app,
+body:not(.dark-theme) .gt-tabs,
+body:not(.dark-theme) .gt-panel,
+body:not(.dark-theme) .gt-panel-inner {
+  background: #FFFFFF;
+}
+
+/* Les éléments de formulaire n'héritent pas toujours de la police du body dans
+   certains navigateurs — on force explicitement. */
+button, input, select, textarea, optgroup {
+  font-family: var(--font-sans);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+}
+
+/* Transitions plus douces sur les éléments interactifs */
+button, .gt-tab, .gt-subtab, .gt-chip, .gt-style-toggle button,
+.gt-linked-loan, .gt-linked-prop, tr[data-loan-id], tr[data-property-id] {
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+              box-shadow 0.15s ease, transform 0.1s ease, color 0.15s ease;
+}
+
+/* Coins plus arrondis et ombres plus douces sur les cartes / panneaux */
+.gt-panel, .gt-card, .gt-metric, .gt-stat, .gt-linked-loan, .gt-linked-prop,
+.gt-collateral-edit-row, .gt-list, .gt-legend, .gt-alert {
+  border-radius: var(--radius-lg) !important;
+}
+
+.gt-panel {
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.06);
+}
+
+.gt-card, .gt-metric {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+/* Boutons un peu plus spacieux et arrondis */
+.gt-save-btn, .gt-secondary-btn {
+  border-radius: var(--radius-md) !important;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.gt-save-btn:hover, .gt-secondary-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Badges en pilule bien arrondie, plus légers visuellement */
+.gt-badge {
+  border-radius: 999px !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Chips de filtre en pilule, transition douce au survol */
+.gt-chip {
+  border-radius: 999px !important;
+}
+.gt-chip:hover {
+  filter: brightness(0.97);
+}
+
+/* Logo + titre un peu plus affirmés */
+.gt-logo {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-size: 19px;
+  display: flex;
+  align-items: center;
+}
+
+/* Sélecteur d'immeuble Street View dans le panneau prêt */
+.gt-sv-selector {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+  font-size: 11px; color: var(--color-text-secondary);
+}
+.gt-sv-selector label {
+  text-transform: uppercase; letter-spacing: 0.03em;
+  font-weight: 600; color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+.gt-sv-selector select {
+  flex: 1; height: 28px; padding: 0 8px;
+  font-size: 12px; border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: white; color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+
+/* Formulaire d'ajout rapide d'un nouvel immeuble (résultat de recherche non enregistré) */
+.gt-new-prop-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 16px;
+  margin-bottom: 20px;
+}
+.gt-new-prop-form label {
+  display: flex; flex-direction: column; gap: 8px;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--color-text-tertiary);
+}
+.gt-new-prop-form input,
+.gt-new-prop-form select {
+  height: 36px; padding: 0 10px;
+  font-size: 13px; font-weight: 400;
+  text-transform: none; letter-spacing: normal;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: white; color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+.gt-new-prop-form input:focus,
+.gt-new-prop-form select:focus {
+  outline: none;
+  border-color: var(--color-brand-blue, #2277B5);
+}
+
+/* Halo pulsant marquant l'emplacement recherché (immeuble existant ou nouvelle adresse) */
+.gt-search-highlight {
+  width: 26px;
+  height: 26px;
+  position: relative;
+  pointer-events: none;
+}
+.gt-search-highlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(83, 74, 183, 0.35);
+  animation: gt-search-pulse 1.8s ease-out infinite;
+}
+.gt-search-highlight::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: #534AB7;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 2px rgba(83, 74, 183, 0.45);
+}
+@keyframes gt-search-pulse {
+  0%   { transform: scale(0.4); opacity: 0.9; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+
+/* Bouton pour afficher/masquer la mosaïque de lots */
+.gt-parcel-toggle {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+}
+.gt-parcel-toggle button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: white;
+  border: 1px solid var(--color-border, #e2e2e2);
+  border-radius: var(--radius-md, 8px);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #555);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.gt-parcel-toggle button:hover {
+  filter: brightness(0.97);
+}
+.gt-parcel-toggle button.active {
+  background: var(--color-brand-blue, #2277B5);
+  border-color: var(--color-brand-blue, #2277B5);
+  color: white;
+}
+
+/* Logo dans l'en-tête */
+.gt-logo-img {
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
+  margin-right: 8px;
+  display: inline-block;
+}
+
+/* Badge pour le nouveau statut "Dossier refusé" */
+.gt-badge.gt-b-refused {
+  background: rgba(107, 114, 128, 0.14);
+  color: #6B7280;
+}
+
+/* Page Taux */
+.gt-rates {
+  padding: 24px 32px;
+  max-width: 1400px;
+}
+.gt-rates-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.gt-rates-header h3 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 600;
+}
+.gt-rates-header p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary, #666);
+  max-width: 560px;
+}
+.gt-rates-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.gt-rates table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.gt-rates table th {
+  text-align: left;
+  padding: 8px 10px;
+  color: var(--color-text-tertiary, #888);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--color-border, #e2e2e2);
+}
+.gt-rates table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--color-border, #f0f0f0);
+}
+
+/* =====================================================================
+   Thème sombre
+   ===================================================================== */
+body.dark-theme {
+  --color-text-primary: #F1F3F6;
+  --color-text-secondary: #B4B9C4;
+  --color-text-tertiary: #7C8290;
+  --color-border: #2A2F3A;
+  background: #0F1115;
+  color: var(--color-text-primary);
+}
+
+body.dark-theme .gt-app {
+  background: #0F1115;
+}
+
+body.dark-theme .gt-tabs {
+  background: #171A21;
+  border-color: #2A2F3A;
+}
+
+body.dark-theme .gt-tab {
+  color: #B4B9C4;
+}
+body.dark-theme .gt-tab.active {
+  color: #F1F3F6;
+  background: #232833;
+}
+
+body.dark-theme .gt-filters,
+body.dark-theme .gt-panel,
+body.dark-theme .gt-panel-inner,
+body.dark-theme .gt-card,
+body.dark-theme .gt-metric,
+body.dark-theme .gt-stat,
+body.dark-theme .gt-legend,
+body.dark-theme .gt-list,
+body.dark-theme .gt-subtabs,
+body.dark-theme .gt-rates {
+  background: #171A21;
+  color: var(--color-text-primary);
+  border-color: #2A2F3A;
+}
+
+body.dark-theme .gt-stat-label,
+body.dark-theme .gt-metric-label {
+  color: var(--color-text-tertiary);
+}
+body.dark-theme .gt-stat-val,
+body.dark-theme .gt-metric-val {
+  color: var(--color-text-primary);
+}
+
+body.dark-theme .gt-count-pill {
+  background: #1F232C;
+  color: var(--color-text-primary);
+  border-color: #2A2F3A;
+}
+
+body.dark-theme .gt-subtab {
+  color: var(--color-text-secondary);
+}
+body.dark-theme .gt-subtab.active {
+  background: #232833;
+  color: var(--color-text-primary);
+}
+
+body.dark-theme .gt-sv-btn,
+body.dark-theme .gt-doc {
+  background: #1F232C;
+  color: var(--color-text-primary);
+  border-color: #2A2F3A;
+}
+body.dark-theme .gt-sv-btn:hover {
+  background: #262B35;
+}
+body.dark-theme .gt-doc.ok {
+  background: rgba(15, 110, 86, 0.18);
+  color: #4ADE9E;
+}
+body.dark-theme .gt-doc.miss {
+  background: rgba(163, 45, 45, 0.18);
+  color: #F28B8B;
+}
+
+body.dark-theme .gt-view,
+body.dark-theme .gt-dash,
+body.dark-theme .gt-map-wrap {
+  background: #0F1115;
+}
+
+body.dark-theme .gt-panel {
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.35);
+}
+
+body.dark-theme .gt-card,
+body.dark-theme .gt-metric {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+body.dark-theme input,
+body.dark-theme select,
+body.dark-theme textarea {
+  background: #1F232C;
+  color: var(--color-text-primary);
+  border-color: #2A2F3A;
+}
+body.dark-theme input::placeholder,
+body.dark-theme textarea::placeholder {
+  color: #6B7280;
+}
+body.dark-theme input:disabled,
+body.dark-theme select:disabled,
+body.dark-theme textarea:disabled {
+  background: #262B35;
+  color: #8A8F9B;
+}
+
+body.dark-theme .gt-chip {
+  background: #1F232C;
+  color: var(--color-text-secondary);
+  border-color: #2A2F3A;
+}
+body.dark-theme .gt-chip.active {
+  background: #534AB7;
+  color: #fff;
+  border-color: #534AB7;
+}
+
+body.dark-theme .gt-secondary-btn {
+  background: #1F232C;
+  color: var(--color-text-primary);
+  border-color: #2A2F3A;
+}
+body.dark-theme .gt-secondary-btn:hover {
+  background: #262B35;
+}
+
+body.dark-theme .gt-style-toggle,
+body.dark-theme .gt-parcel-toggle button:not(.active) {
+  background: #171A21;
+  border-color: #2A2F3A;
+}
+body.dark-theme .gt-style-toggle button {
+  color: var(--color-text-secondary);
+}
+body.dark-theme .gt-style-toggle button.active {
+  background: #534AB7;
+  color: #fff;
+}
+
+body.dark-theme table th {
+  color: var(--color-text-tertiary);
+  border-color: #2A2F3A;
+}
+body.dark-theme table td {
+  border-color: #232833;
+}
+body.dark-theme tr[data-loan-id]:hover,
+body.dark-theme tr[data-property-id]:hover {
+  background: #1D212B;
+}
+
+body.dark-theme .gt-linked-loan,
+body.dark-theme .gt-linked-prop,
+body.dark-theme .gt-collateral-edit-row,
+body.dark-theme .gt-new-prop-form input,
+body.dark-theme .gt-new-prop-form select {
+  background: #1F232C;
+  border-color: #2A2F3A;
+}
+
+body.dark-theme .gt-notes-block {
+  background: #1F232C;
+  color: var(--color-text-secondary);
+}
+
+body.dark-theme .gt-sv-placeholder {
+  background: #1F232C;
+  color: var(--color-text-tertiary);
+}
+
+body.dark-theme .gt-badge {
+  filter: brightness(1.15) saturate(1.1);
+}
+
+body.dark-theme ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+body.dark-theme ::-webkit-scrollbar-track {
+  background: #171A21;
+}
+body.dark-theme ::-webkit-scrollbar-thumb {
+  background: #2A2F3A;
+  border-radius: 999px;
+}
+body.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background: #363C48;
+}
+
+/* Le logo garde sa couleur d'origine, mais on adoucit sa lisibilité sur fond sombre */
+body.dark-theme .gt-logo {
+  color: var(--color-text-primary);
+}
+
+/* Bouton de bascule clair/sombre — détaché du flux des onglets, petit, coin supérieur droit */
+.gt-tabs {
+  position: relative;
+  padding-right: 56px !important;
+  box-sizing: border-box;
+}
+#theme-toggle {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--color-border, #e2e2e2);
+  background: #ffffff;
+  color: var(--color-text-secondary, #555);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+#theme-toggle:hover {
+  background: var(--color-border, #f0f0f0);
+}
+body.dark-theme #theme-toggle {
+  background: #1F232C;
+  border-color: #2A2F3A;
+  color: #F1F3F6;
+}
+body.dark-theme #theme-toggle:hover {
+  background: #262B35;
+}
+
+/* =====================================================================
+   Gantt / calendrier des prêts
+   ===================================================================== */
+.gt-gantt {
+  overflow-x: auto;
+}
+.gt-gantt-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  cursor: pointer;
+  border-radius: var(--radius-md, 8px);
+}
+.gt-gantt-row:hover {
+  background: rgba(83, 74, 183, 0.06);
+}
+.gt-gantt-label {
+  width: 160px;
+  min-width: 160px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #555);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gt-gantt-track {
+  position: relative;
+  flex: 1;
+  min-width: 480px;
+  height: 18px;
+  background: var(--color-border, #f0f0f0);
+  border-radius: 4px;
+}
+.gt-gantt-bar {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 4px;
+  min-width: 4px;
+}
+.gt-gantt-axis {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--color-border, #e2e2e2);
+}
+.gt-gantt-axis .gt-gantt-track {
+  background: transparent;
+  height: 16px;
+}
+.gt-gantt-year {
+  position: absolute;
+  top: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-tertiary, #888);
+  transform: translateX(-2px);
+  border-left: 1px solid var(--color-border, #d8d8d8);
+  padding-left: 4px;
+  height: 100%;
+}
+.gt-gantt-today {
+  position: absolute;
+  top: -4px;
+  bottom: -1000px;
+  width: 2px;
+  background: #E24B4A;
+  z-index: 1;
+}
+
+body.dark-theme .gt-gantt-track {
+  background: #1F232C;
+}
+body.dark-theme .gt-gantt-year {
+  border-left-color: #2A2F3A;
+}
+body.dark-theme .gt-gantt-row:hover {
+  background: rgba(83, 74, 183, 0.15);
+}
+
+/* =====================================================================
+   Lisibilité des chiffres + distinction éditable / lecture seule
+   ===================================================================== */
+
+/* Chiffres alignés proprement (largeur fixe par chiffre) partout */
+.gt-stat-val, .gt-metric-val, .gt-row span:last-child,
+td, .gt-bar-val, .gt-linked-loan-stats strong, .gt-linked-prop-stats strong {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Valeurs-clés plus grandes et plus affirmées */
+.gt-stat-val {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.gt-metric-val {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.gt-stat-label, .gt-metric-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Champs modifiables : bordure nette + effet net au focus */
+.gt-new-prop-form input:not(:disabled),
+.gt-new-prop-form select:not(:disabled),
+.gt-new-prop-form textarea:not(:disabled) {
+  border: 1.5px solid var(--color-border, #d8d8d8);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.gt-new-prop-form input:not(:disabled):focus,
+.gt-new-prop-form select:not(:disabled):focus,
+.gt-new-prop-form textarea:not(:disabled):focus {
+  outline: none;
+  border-color: var(--color-brand-blue, #2277B5);
+  box-shadow: 0 0 0 3px rgba(34, 119, 181, 0.15);
+}
+
+/* Champs calculés / lecture seule : clairement neutres, non cliquables */
+.gt-new-prop-form input:disabled,
+.gt-new-prop-form select:disabled,
+input[disabled],
+select[disabled] {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-border, #ececec),
+    var(--color-border, #ececec) 6px,
+    rgba(0, 0, 0, 0.02) 6px,
+    rgba(0, 0, 0, 0.02) 12px
+  );
+  border: 1.5px dashed var(--color-border, #d8d8d8);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+/* Petit repère visuel "calculé" sur les labels de champs lecture seule */
+.gt-readonly-label::after {
+  content: "calculé";
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-text-tertiary);
+  background: var(--color-border, #ececec);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+body.dark-theme .gt-new-prop-form input:disabled,
+body.dark-theme .gt-new-prop-form select:disabled,
+body.dark-theme input[disabled],
+body.dark-theme select[disabled] {
+  background: repeating-linear-gradient(
+    135deg,
+    #1F232C,
+    #1F232C 6px,
+    #262b35 6px,
+    #262b35 12px
+  );
+  border-color: #2A2F3A;
+  color: var(--color-text-tertiary);
+}
+
+/* Un peu moins de "gadgets" visuels : ombres/relief plus discrets */
+.gt-save-btn:hover, .gt-secondary-btn:hover {
+  transform: none;
+}
+
+/* =====================================================================
+   En-tête de panneau : badge à gauche + bouton Modifier à droite, en bleu logo
+   ===================================================================== */
+.gt-panel-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+.gt-badge-accent {
+  background: rgba(34, 119, 181, 0.12);
+  color: var(--color-brand-blue);
+}
+body.dark-theme .gt-badge-accent {
+  background: rgba(34, 119, 181, 0.22);
+  color: #5CA8E0;
+}
+
+.gt-edit-btn-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  padding: 9px 16px;
+  background: var(--color-brand-blue);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.gt-edit-btn-accent:hover {
+  background: #1B5F92;
+}
+
+/* =====================================================================
+   Titres de section et lignes d'info : plus lisibles, plus d'air
+   ===================================================================== */
+.gt-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-primary);
+  margin-top: 22px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid var(--color-border, #ececec);
+}
+.gt-section-title:first-of-type {
+  margin-top: 16px;
+}
+
+.gt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  font-size: 13px;
+}
+.gt-row span:first-child {
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+.gt-row span:last-child {
+  font-weight: 600;
+  text-align: right;
+}
+
+body.dark-theme .gt-section-title {
+  color: var(--color-text-primary);
+  border-bottom-color: #2A2F3A;
+}
+
+/* Notes éditables directement dans la vue (pas besoin du mode Modifier) */
+.gt-notes-editable {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 8px);
+  border: 1.5px solid #E5E7EB;
+  background: #FAFBFC;
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.gt-notes-editable:hover {
+  border-color: #b9c2cc;
+}
+.gt-notes-editable:focus {
+  outline: none;
+  background: #FFFFFF;
+  border-color: var(--color-brand-blue, #2277B5);
+  box-shadow: 0 0 0 3px rgba(34, 119, 181, 0.15);
+}
+.gt-notes-editable::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+body.dark-theme .gt-notes-editable {
+  background: #1F232C;
+  border-color: #2A2F3A;
+  color: var(--color-text-primary);
+}
+body.dark-theme .gt-notes-editable:focus {
+  background: #1F232C;
+}
+
+/* =====================================================================
+   Bulles d'info sur les pins (façon arenarium.dev, version maison)
+   ===================================================================== */
+#bubble-labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 3;
+  overflow: hidden;
+}
+
+.gt-bubble {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 10px;
+  background: #FFFFFF;
+  border: 1.5px solid #ccc;
+  border-radius: 14px;
+  font-family: var(--font-sans);
+  color: var(--color-text-primary, #2D3136);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.16);
+  white-space: nowrap;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+.gt-bubble:hover {
+  transform: translate(-50%, -100%) scale(1.06);
+  z-index: 4;
+}
+.gt-bubble-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.gt-bubble-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.15;
+}
+.gt-bubble-amount {
+  font-size: 14px;
+  font-weight: 700;
+}
+.gt-bubble-owner {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+body.dark-theme .gt-bubble {
+  background: #171A21;
+  color: var(--color-text-primary);
+  border-color: #2A2F3A;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+body.dark-theme .gt-bubble-owner {
+  color: var(--color-text-tertiary);
+}
+
+/* =====================================================================
+   Légende du dégradé de valeur des lots
+   ===================================================================== */
+.gt-value-legend {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 5;
+  background: #FFFFFF;
+  border-radius: var(--radius-lg, 12px);
+  padding: 12px 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  width: 260px;
+  font-family: var(--font-sans);
+}
+.gt-value-legend-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-secondary, #555);
+  margin-bottom: 8px;
+}
+.gt-value-legend-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    #6B1E07 0%,
+    #B0301A 12%,
+    #E07B1E 24%,
+    #F2D027 36%,
+    #A8D62B 48%,
+    #2FA84F 58%,
+    #1FA398 68%,
+    #2E7FD6 78%,
+    #6A5ACD 90%,
+    #9B4FC7 100%
+  );
+}
+.gt-value-legend-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+body.dark-theme .gt-value-legend {
+  background: #171A21;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+body.dark-theme .gt-value-legend-title {
+  color: var(--color-text-tertiary);
+}
+
+/* =====================================================================
+   Correction : mini-stats (Rang, LTV part, etc.) dans les cartes prêt/immeuble
+   liées — garantit un empilement label/valeur propre peu importe la largeur
+   ===================================================================== */
+.gt-linked-loan-stats,
+.gt-linked-prop-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.gt-linked-loan-stats > div,
+.gt-linked-prop-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.gt-linked-loan-stats label,
+.gt-linked-prop-stats label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-tertiary);
+}
+.gt-linked-loan-stats strong,
+.gt-linked-prop-stats strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* =====================================================================
+   Champs éditables directement dans les tableaux Portfolio
+   ===================================================================== */
+.gt-inline-edit {
+  display: block;
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 3px 5px;
+  margin: -3px -5px;
+  border-radius: 5px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--color-text-primary);
+  cursor: text;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+select.gt-inline-edit {
+  cursor: pointer;
+}
+.gt-inline-edit:hover {
+  background: var(--color-border, #f0f0f0);
+}
+.gt-inline-edit:focus {
+  outline: none;
+  background: #FFFFFF;
+  border-color: var(--color-brand-blue, #2277B5);
+  box-shadow: 0 0 0 2px rgba(34, 119, 181, 0.15);
+  cursor: text;
+}
+
+body.dark-theme .gt-inline-edit:hover {
+  background: #1F232C;
+}
+body.dark-theme .gt-inline-edit:focus {
+  background: #1F232C;
+}
+
+/* =====================================================================
+   Défilement horizontal pour les tableaux Portfolio (beaucoup de colonnes)
+   ===================================================================== */
+#loans-body,
+#props-body {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#loans-body table,
+#props-body table {
+  min-width: 1400px;
+  width: max-content;
+}
+#loans-body th, #loans-body td,
+#props-body th, #props-body td {
+  white-space: nowrap;
+  min-width: 90px;
+}
+#loans-body th:first-child, #loans-body td:first-child,
+#props-body th:first-child, #props-body td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #FFFFFF;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.04);
+}
+body.dark-theme #loans-body th:first-child, body.dark-theme #loans-body td:first-child,
+body.dark-theme #props-body th:first-child, body.dark-theme #props-body td:first-child {
+  background: #171A21;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.3);
+}
+
+#loans-body::-webkit-scrollbar,
+#props-body::-webkit-scrollbar {
+  height: 10px;
+}
+#loans-body::-webkit-scrollbar-thumb,
+#props-body::-webkit-scrollbar-thumb {
+  background: var(--color-border, #d8d8d8);
+  border-radius: 999px;
+}
+body.dark-theme #loans-body::-webkit-scrollbar-thumb,
+body.dark-theme #props-body::-webkit-scrollbar-thumb {
+  background: #2A2F3A;
+}
+
+/* =====================================================================
+   Tableaux Portfolio (Prêts/Immeubles) : défilement horizontal plutôt
+   que des colonnes trop serrées
+   ===================================================================== */
+#loans-body,
+#props-body {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#loans-body table,
+#props-body table {
+  min-width: 1600px;
+  width: max-content;
+}
+#loans-body th, #loans-body td,
+#props-body th, #props-body td {
+  white-space: nowrap;
+}
+#loans-body td:first-child,
+#props-body td:first-child {
+  white-space: normal;
+}
+
+/* =====================================================================
+   Page Paramètres
+   ===================================================================== */
+.gt-settings {
+  padding: 24px 32px;
+  max-width: 900px;
+}
+.gt-settings-group {
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border, #ececec);
+}
+.gt-settings-group-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+}
+.gt-settings-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.gt-settings-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 12px;
+  background: var(--color-border, #f0f0f0);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.gt-settings-chip-remove,
+.gt-settings-status-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 50%;
+  color: inherit;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0;
+}
+.gt-settings-chip-remove:hover,
+.gt-settings-status-remove:hover {
+  background: rgba(163, 45, 45, 0.25);
+  color: #A32D2D;
+}
+.gt-settings-add-row {
+  display: flex;
+  gap: 8px;
+}
+.gt-settings-add-input {
+  flex: 1;
+  max-width: 280px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-border, #d8d8d8);
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+.gt-settings-add-input:focus {
+  outline: none;
+  border-color: var(--color-brand-blue, #2277B5);
+  box-shadow: 0 0 0 3px rgba(34, 119, 181, 0.15);
+}
+
+body.dark-theme .gt-settings-chip {
+  background: #1F232C;
+}
+body.dark-theme .gt-settings-add-input {
+  background: #1F232C;
+  border-color: #2A2F3A;
+  color: var(--color-text-primary);
+}
+body.dark-theme .gt-settings-group {
+  border-bottom-color: #2A2F3A;
+}
+
+/* =====================================================================
+   Barre de filtres rétractable (façon accordéon)
+   ===================================================================== */
+.gt-filters {
+  position: relative;
+  transition: width 0.22s ease, min-width 0.22s ease, padding 0.22s ease;
+  overflow: hidden;
+}
+
+#filters-collapse-toggle {
+  position: absolute;
+  top: 12px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border, #e2e2e2);
+  background: #FFFFFF;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--color-text-secondary, #555);
+  z-index: 6;
+  transition: transform 0.22s ease, background-color 0.15s ease;
+}
+#filters-collapse-toggle:hover {
+  background: var(--color-border, #f0f0f0);
+}
+
+.gt-filters.collapsed {
+  width: 44px !important;
+  min-width: 44px !important;
+  padding-left: 0;
+  padding-right: 0;
+}
+.gt-filters.collapsed > *:not(#filters-collapse-toggle) {
+  opacity: 0;
+  pointer-events: none;
+}
+.gt-filters.collapsed #filters-collapse-toggle {
+  right: 50%;
+  transform: translateX(50%) rotate(180deg);
+}
+
+.gt-filters:not(.collapsed) > * {
+  opacity: 1;
+  transition: opacity 0.15s ease 0.08s;
+}
+
+body.dark-theme #filters-collapse-toggle {
+  background: #1F232C;
+  border-color: #2A2F3A;
+  color: var(--color-text-primary);
+}
+body.dark-theme #filters-collapse-toggle:hover {
+  background: #262B35;
+}
+
+/* =====================================================================
+   Correction : la carte doit combler l'espace libéré par la barre de
+   filtres rétractée. Le conteneur utilise probablement CSS Grid — changer
+   la largeur de .gt-filters elle-même n'affecte pas la colonne de la grille,
+   il faut cibler le parent directement.
+   ===================================================================== */
+#map-wrap:has(.gt-filters.collapsed) {
+  grid-template-columns: 44px 1fr !important;
+}
+
+/* =====================================================================
+   Légende des zones inondables
+   ===================================================================== */
+.gt-flood-legend {
+  position: absolute;
+  bottom: 140px;
+  right: 16px;
+  z-index: 5;
+  background: #FFFFFF;
+  border-radius: var(--radius-lg, 12px);
+  padding: 12px 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  width: 200px;
+  font-family: var(--font-sans);
+}
+.gt-flood-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 0;
+}
+.gt-flood-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+body.dark-theme .gt-flood-legend {
+  background: #171A21;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
