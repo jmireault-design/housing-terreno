@@ -91,10 +91,12 @@ function initMap() {
 /* ---------- Regroupement visuel par municipalité (couleurs pastel, visible en dézoomant) ---------- */
 function setupMunicipalityLayer() {
   if (!CONFIG.municipalityTileset || !CONFIG.municipalityTileset.id) return;
+  if (map.getLayer("gt-municipality-fill")) return; // déjà en place
 
   const pastelPalette = [
-    "#FDE9C8", "#D9F0D3", "#D6E8F5", "#F5DCE8", "#E4DCF5",
-    "#FCE8D8", "#D8F0EA", "#F0E4C8", "#E0E8F0", "#F5D9DC"
+    "#FBC9B0", "#B8E3C4", "#AECBF0", "#F0B8D8", "#D0BCF0",
+    "#F5DA8A", "#9EE0D8", "#F0C6E8", "#C4D98A", "#F0A8A8",
+    "#A8D8F0", "#E8C87A"
   ];
 
   map.addSource("gt-municipalities", {
@@ -111,16 +113,17 @@ function setupMunicipalityLayer() {
     maxzoom: 13,
     paint: {
       "fill-color": [
-        "match", ["%", ["to-number", ["get", "MUS_CO_GEO"]], 10],
+        "match", ["%", ["to-number", ["get", "MUS_CO_GEO"]], 12],
         0, pastelPalette[0], 1, pastelPalette[1], 2, pastelPalette[2],
         3, pastelPalette[3], 4, pastelPalette[4], 5, pastelPalette[5],
         6, pastelPalette[6], 7, pastelPalette[7], 8, pastelPalette[8],
-        pastelPalette[9]
+        9, pastelPalette[9], 10, pastelPalette[10],
+        pastelPalette[11]
       ],
       "fill-opacity": [
         "interpolate", ["linear"], ["zoom"],
-        5, 0.55,
-        11, 0.5,
+        5, 0.65,
+        11, 0.6,
         13, 0
       ]
     }
@@ -134,8 +137,8 @@ function setupMunicipalityLayer() {
     minzoom: 5,
     maxzoom: 13,
     paint: {
-      "line-color": "rgba(255,255,255,0.7)",
-      "line-width": 1
+      "line-color": "rgba(90,90,105,0.32)",
+      "line-width": 1.2
     }
   });
 
@@ -162,6 +165,7 @@ function setupMunicipalityLayer() {
 /* ---------- Zones inondables officielles (BDZI) ---------- */
 function setupFloodZoneLayer() {
   if (!CONFIG.floodZonesTileset || !CONFIG.floodZonesTileset.id) return;
+  if (map.getLayer("gt-flood-zone-fill")) return; // déjà en place
 
   map.addSource("gt-flood-zones", {
     type: "vector",
@@ -1437,5 +1441,31 @@ function clearCollateralHighlights() {
 /* ---------- Changement de style ---------- */
 function setMapStyle(styleKey) {
   map.setStyle(CONFIG.styles[styleKey]);
-  map.once("style.load", () => setupClusterLayers());
+  map.once("style.load", () => {
+    setupClusterLayers();
+    setupMunicipalityLayer();
+    setupFloodZoneLayer();
+
+    // Respecte l'état actuel des boutons (visible/masqué) plutôt que de tout
+    // réafficher par défaut — sinon une couche désactivée reviendrait toute seule.
+    const muniBtn = document.getElementById("toggle-municipalities");
+    if (muniBtn && !muniBtn.classList.contains("active")) {
+      ["gt-municipality-fill", "gt-municipality-outline", "gt-municipality-label"].forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+      });
+    }
+
+    const floodBtn = document.getElementById("toggle-flood-zones");
+    if (floodBtn && !floodBtn.classList.contains("active")) {
+      ["gt-flood-zone-fill", "gt-flood-zone-outline"].forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+      });
+    }
+
+    // Les lots (cadastre) ne se rattachent que si le bouton "Lots" est actif
+    const parcelBtn = document.getElementById("toggle-parcels");
+    if (parcelBtn && parcelBtn.classList.contains("active")) {
+      setupCityParcelLayer();
+    }
+  });
 }

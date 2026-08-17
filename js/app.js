@@ -79,32 +79,6 @@ function wireThemeToggle() {
 }
 
 function wireUI() {
-  // Barre de filtres rétractable
-  const filtersSidebar = document.getElementById("filters-sidebar");
-  const filtersToggle = document.getElementById("filters-collapse-toggle");
-  if (filtersSidebar && filtersToggle) {
-    try {
-      if (localStorage.getItem("terreno_filters_collapsed") === "true") {
-        filtersSidebar.classList.add("collapsed");
-      }
-    } catch (e) {
-      console.warn("Terreno: lecture localStorage impossible.", e);
-    }
-    filtersToggle.addEventListener("click", () => {
-      const collapsed = filtersSidebar.classList.toggle("collapsed");
-      try {
-        localStorage.setItem("terreno_filters_collapsed", collapsed ? "true" : "false");
-      } catch (e) {
-        console.warn("Terreno: sauvegarde localStorage impossible.", e);
-      }
-      // Mapbox ne redimensionne pas tout seul son canvas quand l'espace change via CSS —
-      // on le force une fois la transition (0.22s) terminée.
-      if (typeof map !== "undefined" && map) {
-        setTimeout(() => map.resize(), 240);
-      }
-    });
-  }
-
   // Onglets principaux
   document.querySelectorAll(".gt-tab").forEach(t => {
     t.addEventListener("click", () => switchView(t.dataset.view));
@@ -168,6 +142,36 @@ function wireUI() {
   if (pinToggle) {
     pinToggle.addEventListener("click", () => {
       if (typeof togglePinMode === "function") togglePinMode();
+    });
+  }
+
+  // Afficher / masquer les limites municipales
+  const muniToggle = document.getElementById("toggle-municipalities");
+  if (muniToggle) {
+    muniToggle.addEventListener("click", () => {
+      if (!map) return;
+      const layers = ["gt-municipality-fill", "gt-municipality-outline", "gt-municipality-label"];
+      const isVisible = muniToggle.classList.contains("active");
+      layers.forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", isVisible ? "none" : "visible");
+      });
+      muniToggle.classList.toggle("active", !isVisible);
+    });
+  }
+
+  // Afficher / masquer les zones inondables (+ sa légende)
+  const floodToggle = document.getElementById("toggle-flood-zones");
+  if (floodToggle) {
+    floodToggle.addEventListener("click", () => {
+      if (!map) return;
+      const layers = ["gt-flood-zone-fill", "gt-flood-zone-outline"];
+      const isVisible = floodToggle.classList.contains("active");
+      layers.forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", isVisible ? "none" : "visible");
+      });
+      floodToggle.classList.toggle("active", !isVisible);
+      const floodLegend = document.getElementById("flood-legend");
+      if (floodLegend) floodLegend.style.display = isVisible ? "none" : "block";
     });
   }
 

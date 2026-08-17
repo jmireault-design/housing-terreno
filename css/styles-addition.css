@@ -1164,72 +1164,16 @@ body.dark-theme .gt-settings-group {
 }
 
 /* =====================================================================
-   Barre de filtres rétractable (façon accordéon)
+   Barre de filtres — reste toujours visible, juste un peu plus étroite.
+   Valeurs exactes confirmées via l'inspecteur : on ne change QUE le premier
+   chiffre (220px → 190px), tout le reste (1fr, 0fr, 400px) reste identique
+   à ce que styles.css définit déjà pour la carte et le panneau.
    ===================================================================== */
-.gt-filters {
-  position: relative;
-  transition: width 0.22s ease, min-width 0.22s ease, padding 0.22s ease;
-  overflow: hidden;
+.gt-map-wrap {
+  grid-template-columns: 190px 1fr 0fr !important;
 }
-
-#filters-collapse-toggle {
-  position: absolute;
-  top: 12px;
-  right: 8px;
-  width: 26px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--color-border, #e2e2e2);
-  background: #FFFFFF;
-  border-radius: 50%;
-  cursor: pointer;
-  color: var(--color-text-secondary, #555);
-  z-index: 6;
-  transition: transform 0.22s ease, background-color 0.15s ease;
-}
-#filters-collapse-toggle:hover {
-  background: var(--color-border, #f0f0f0);
-}
-
-.gt-filters.collapsed {
-  width: 44px !important;
-  min-width: 44px !important;
-  padding-left: 0;
-  padding-right: 0;
-}
-.gt-filters.collapsed > *:not(#filters-collapse-toggle) {
-  opacity: 0;
-  pointer-events: none;
-}
-.gt-filters.collapsed #filters-collapse-toggle {
-  right: 50%;
-  transform: translateX(50%) rotate(180deg);
-}
-
-.gt-filters:not(.collapsed) > * {
-  opacity: 1;
-  transition: opacity 0.15s ease 0.08s;
-}
-
-body.dark-theme #filters-collapse-toggle {
-  background: #1F232C;
-  border-color: #2A2F3A;
-  color: var(--color-text-primary);
-}
-body.dark-theme #filters-collapse-toggle:hover {
-  background: #262B35;
-}
-
-/* =====================================================================
-   Correction : la carte doit combler l'espace libéré par la barre de
-   filtres rétractée. Le conteneur utilise probablement CSS Grid — changer
-   la largeur de .gt-filters elle-même n'affecte pas la colonne de la grille,
-   il faut cibler le parent directement.
-   ===================================================================== */
-#map-wrap:has(.gt-filters.collapsed) {
-  grid-template-columns: 44px 1fr !important;
+.gt-map-wrap.panel-open {
+  grid-template-columns: 190px 1fr 400px !important;
 }
 
 /* =====================================================================
