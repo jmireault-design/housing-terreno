@@ -209,6 +209,7 @@ function wireInlineEdits(container) {
       buildIndexes();
       if (isNum) el.value = formatNumberWithCommas(val);
       if (typeof populatePortfolioFilters === "function") populatePortfolioFilters();
+      if (typeof populateMapLenderChips === "function") populateMapLenderChips();
       refreshMap();
       renderDashboard();
       if (loanId || !propertyId || el.closest("#portfolio-loans")) renderLoansList();

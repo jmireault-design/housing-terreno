@@ -32,7 +32,10 @@ const state = {
     status: "all",
     city: "all",
     type: "all",
-    view: "all"
+    view: "all",
+    lender: "all",
+    rank: "all",
+    loanType: "all"
   },
 
   // Sous-onglet du portfolio: "loans" ou "properties"
@@ -129,6 +132,18 @@ function propertyPassesFilters(p) {
     const loans = loansForProperty(p.id);
     const anySaved = loans.some(l => state.savedLoans.has(l.loan.id));
     if (!anySaved) return false;
+  }
+
+  if (f.lender !== "all" || f.rank !== "all" || f.loanType !== "all") {
+    const links = loansForProperty(p.id);
+    const anyMatch = links.some(l => {
+      if (!l.loan) return false;
+      if (f.lender !== "all" && l.loan.lender !== f.lender) return false;
+      if (f.rank !== "all" && l.rank !== f.rank) return false;
+      if (f.loanType !== "all" && l.loan.type !== f.loanType) return false;
+      return true;
+    });
+    if (!anyMatch) return false;
   }
 
   return true;

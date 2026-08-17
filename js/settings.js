@@ -75,6 +75,7 @@ function wireSettingsPage() {
     btn.addEventListener("click", () => {
       removeCustomOption(btn.dataset.field, btn.dataset.value);
       renderSettingsPage();
+      if (btn.dataset.field === "propertyTypes" && typeof populateMapTypeChips === "function") populateMapTypeChips();
     });
   });
 
@@ -90,6 +91,7 @@ function wireSettingsPage() {
         saveCustomOptions();
       }
       renderSettingsPage();
+      if (field === "propertyTypes" && typeof populateMapTypeChips === "function") populateMapTypeChips();
     });
   });
   mount.querySelectorAll(".gt-settings-add-input[data-field]").forEach(input => {

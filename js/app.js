@@ -21,6 +21,10 @@ function populatePortfolioFilters() {
     types.map(t => `<option value="${t}">${t}</option>`).join("");
 
   populateMapCityChips(cities);
+  populateMapTypeChips();
+  populateMapLenderChips();
+  populateMapRankChips();
+  populateMapLoanTypeChips();
 }
 
 // Chips "Ville" du filtre carte — générées à partir des vraies villes présentes dans
@@ -45,7 +49,65 @@ function populateMapCityChips(cities) {
   });
 }
 
+// Chips "Type" du filtre carte — générées à partir de la même liste "Type d'immeuble"
+// que Paramètres/formulaires (CONFIG.options.propertyTypes), pour qu'elles restent
+// toujours synchronisées (y compris les types ajoutés/retirés depuis Paramètres).
+function populateMapTypeChips() {
+  const container = document.getElementById("type-filter-chips");
+  if (!container) return;
+  const currentActive = state.filters.type;
+  const types = CONFIG.options.propertyTypes;
+
+  container.innerHTML = `<span class="gt-chip ${currentActive === "all" ? "active" : ""}" data-f="type" data-v="all">Tous</span>` +
+    types.map(t => `<span class="gt-chip ${currentActive === t ? "active" : ""}" data-f="type" data-v="${t}">${t}</span>`).join("");
+
+  container.querySelectorAll(".gt-chip").forEach(c => {
+    c.addEventListener("click", () => {
+      container.querySelectorAll(".gt-chip").forEach(x => x.classList.remove("active"));
+      c.classList.add("active");
+      state.filters.type = c.dataset.v;
+      refreshMap();
+    });
+  });
+}
+
 const THEME_KEY = "terreno_theme";
+
+// Chip générique réutilisée pour Prêteur / Rang / Type de prêt
+function populateGenericChips(containerId, filterKey, values) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const currentActive = state.filters[filterKey];
+
+  container.innerHTML = `<span class="gt-chip ${currentActive === "all" ? "active" : ""}" data-f="${filterKey}" data-v="all">Tous</span>` +
+    values.map(v => `<span class="gt-chip ${currentActive === v ? "active" : ""}" data-f="${filterKey}" data-v="${v}">${v}</span>`).join("");
+
+  container.querySelectorAll(".gt-chip").forEach(c => {
+    c.addEventListener("click", () => {
+      container.querySelectorAll(".gt-chip").forEach(x => x.classList.remove("active"));
+      c.classList.add("active");
+      state.filters[filterKey] = c.dataset.v;
+      refreshMap();
+    });
+  });
+}
+
+// Prêteur — généré à partir des vraies valeurs présentes dans tes prêts (pas une
+// liste figée, puisque ce n'est pas un champ géré dans Paramètres)
+function populateMapLenderChips() {
+  const lenders = [...new Set(state.loans.map(l => l.lender).filter(Boolean))].sort();
+  populateGenericChips("lender-filter-chips", "lender", lenders);
+}
+
+// Rang — depuis la même liste gérée que Paramètres/formulaires
+function populateMapRankChips() {
+  populateGenericChips("rank-filter-chips", "rank", CONFIG.options.ranks);
+}
+
+// Type de prêt — depuis la même liste gérée que Paramètres/formulaires
+function populateMapLoanTypeChips() {
+  populateGenericChips("loantype-filter-chips", "loanType", CONFIG.options.loanTypes);
+}
 
 function applyTheme(theme) {
   document.body.classList.toggle("dark-theme", theme === "dark");
