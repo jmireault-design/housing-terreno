@@ -81,6 +81,10 @@ function initMap() {
   map.on("load", () => {
     setupMunicipalityLayer();
     setupFloodZoneLayer();
+    setupLandslideZoneLayer();
+    setupContaminatedSitesLayer();
+    setupAgriculturalZoneLayer();
+    setupCoastalErosionLayer();
     setupClusterLayers();
     refreshMap();
     wirePinModeClick();
@@ -214,6 +218,194 @@ async function fetchFloodZoneStatus(lng, lat) {
   const props = await tilequeryLookup(CONFIG.floodZonesTileset.id, lng, lat);
   if (!props || !props.Description) return null;
   return { description: props.Description, report: props.Nm_rapport || "" };
+}
+
+/* ---------- Zones de glissements de terrain (ZPEGT) ---------- */
+function setupLandslideZoneLayer() {
+  if (!CONFIG.landslideZonesTileset || !CONFIG.landslideZonesTileset.id) return;
+  if (map.getLayer("gt-landslide-fill")) return;
+
+  map.addSource("gt-landslide-zones", {
+    type: "vector",
+    url: `mapbox://${CONFIG.landslideZonesTileset.id}`
+  });
+
+  map.addLayer({
+    id: "gt-landslide-fill",
+    type: "fill",
+    source: "gt-landslide-zones",
+    "source-layer": CONFIG.landslideZonesTileset.sourceLayer,
+    minzoom: 6,
+    paint: {
+      "fill-color": "#B45309",
+      "fill-opacity": 0.35
+    }
+  });
+
+  map.addLayer({
+    id: "gt-landslide-outline",
+    type: "line",
+    source: "gt-landslide-zones",
+    "source-layer": CONFIG.landslideZonesTileset.sourceLayer,
+    minzoom: 6,
+    paint: {
+      "line-color": "#92400E",
+      "line-width": 1
+    }
+  });
+}
+
+async function fetchLandslideZoneStatus(lng, lat) {
+  if (!CONFIG.landslideZonesTileset || !CONFIG.landslideZonesTileset.id) return null;
+  const props = await tilequeryLookup(CONFIG.landslideZonesTileset.id, lng, lat);
+  if (!props) return null;
+  const label = props.etq_contr || props.fam_gliss || props.descriptio;
+  if (!label) return null;
+  return { label, family: props.fam_gliss || "" };
+}
+
+/* ---------- Répertoire des terrains contaminés (GTC) ---------- */
+function setupContaminatedSitesLayer() {
+  if (!CONFIG.contaminatedSitesTileset || !CONFIG.contaminatedSitesTileset.id) return;
+  if (map.getLayer("gt-contaminated-points")) return;
+
+  map.addSource("gt-contaminated-sites", {
+    type: "vector",
+    url: `mapbox://${CONFIG.contaminatedSitesTileset.id}`
+  });
+
+  const milieuColorMatch = [
+    "match", ["get", "DESC_MILIEU_RECEPT"],
+    "Sol", "#1A1A1A",
+    "Eau souterraine", "#00A9E6",
+    "Sol et eau souterraine", "#FF3300",
+    "#686868"
+  ];
+
+  // Halo semi-transparent sous chaque point, pour que ça se voie bien même
+  // dézoomé et parmi d'autres éléments de la carte.
+  map.addLayer({
+    id: "gt-contaminated-halo",
+    type: "circle",
+    source: "gt-contaminated-sites",
+    "source-layer": CONFIG.contaminatedSitesTileset.sourceLayer,
+    minzoom: 8,
+    paint: {
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 10, 16, 22],
+      "circle-color": milieuColorMatch,
+      "circle-opacity": 0.25,
+      "circle-blur": 0.6
+    }
+  });
+
+  map.addLayer({
+    id: "gt-contaminated-points",
+    type: "circle",
+    source: "gt-contaminated-sites",
+    "source-layer": CONFIG.contaminatedSitesTileset.sourceLayer,
+    minzoom: 8,
+    paint: {
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 6, 16, 14],
+      "circle-color": milieuColorMatch,
+      "circle-stroke-color": "#FFFFFF",
+      "circle-stroke-width": 2.5
+    }
+  });
+}
+
+async function fetchContaminatedSiteStatus(lng, lat) {
+  if (!CONFIG.contaminatedSitesTileset || !CONFIG.contaminatedSitesTileset.id) return null;
+  const props = await tilequeryLookup(CONFIG.contaminatedSitesTileset.id, lng, lat);
+  if (!props || !props.NO_MEF_LIEU) return null;
+  return {
+    reference: props.NO_MEF_LIEU,
+    milieu: props.DESC_MILIEU_RECEPT || "",
+    address: props.ADR_CIV_LIEU || ""
+  };
+}
+
+/* ---------- Zone agricole protégée (CPTAQ) ---------- */
+function setupAgriculturalZoneLayer() {
+  if (!CONFIG.agriculturalZoneTileset || !CONFIG.agriculturalZoneTileset.id) return;
+  if (map.getLayer("gt-agricultural-fill")) return;
+
+  map.addSource("gt-agricultural-zone", {
+    type: "vector",
+    url: `mapbox://${CONFIG.agriculturalZoneTileset.id}`
+  });
+
+  map.addLayer({
+    id: "gt-agricultural-fill",
+    type: "fill",
+    source: "gt-agricultural-zone",
+    "source-layer": CONFIG.agriculturalZoneTileset.sourceLayer,
+    minzoom: 6,
+    paint: {
+      "fill-color": "#4D7C0F",
+      "fill-opacity": 0.2
+    }
+  });
+
+  map.addLayer({
+    id: "gt-agricultural-outline",
+    type: "line",
+    source: "gt-agricultural-zone",
+    "source-layer": CONFIG.agriculturalZoneTileset.sourceLayer,
+    minzoom: 6,
+    paint: {
+      "line-color": "#4D7C0F",
+      "line-width": 1
+    }
+  });
+}
+
+async function fetchAgriculturalZoneStatus(lng, lat) {
+  if (!CONFIG.agriculturalZoneTileset || !CONFIG.agriculturalZoneTileset.id) return null;
+  const props = await tilequeryLookup(CONFIG.agriculturalZoneTileset.id, lng, lat);
+  if (!props) return null;
+  return { inZone: true };
+}
+
+/* ---------- Zones de contraintes érosion côtière / mouvements de terrain (ZEMT) ---------- */
+function setupCoastalErosionLayer() {
+  if (!CONFIG.coastalErosionTileset || !CONFIG.coastalErosionTileset.id) return;
+  if (map.getLayer("gt-coastal-erosion-fill")) return;
+
+  map.addSource("gt-coastal-erosion", {
+    type: "vector",
+    url: `mapbox://${CONFIG.coastalErosionTileset.id}`
+  });
+
+  map.addLayer({
+    id: "gt-coastal-erosion-fill",
+    type: "fill",
+    source: "gt-coastal-erosion",
+    "source-layer": CONFIG.coastalErosionTileset.sourceLayer,
+    minzoom: 6,
+    paint: {
+      "fill-color": "#0891B2",
+      "fill-opacity": 0.35
+    }
+  });
+
+  map.addLayer({
+    id: "gt-coastal-erosion-outline",
+    type: "line",
+    source: "gt-coastal-erosion",
+    "source-layer": CONFIG.coastalErosionTileset.sourceLayer,
+    minzoom: 6,
+    paint: {
+      "line-color": "#0E7490",
+      "line-width": 1
+    }
+  });
+}
+
+async function fetchCoastalErosionStatus(lng, lat) {
+  if (!CONFIG.coastalErosionTileset || !CONFIG.coastalErosionTileset.id) return null;
+  const props = await tilequeryLookup(CONFIG.coastalErosionTileset.id, lng, lat);
+  if (!props) return null;
+  return { mrc: props.mrc_nom || "", zoneType: props.zone_type || "" };
 }
 
 /* ---------- Surlignage du lot sélectionné (le polygone entier, pas un point) ---------- */
@@ -1445,9 +1637,13 @@ function setMapStyle(styleKey) {
     setupClusterLayers();
     setupMunicipalityLayer();
     setupFloodZoneLayer();
+    setupLandslideZoneLayer();
+    setupContaminatedSitesLayer();
+    setupAgriculturalZoneLayer();
+    setupCoastalErosionLayer();
 
-    // Respecte l'état actuel des boutons (visible/masqué) plutôt que de tout
-    // réafficher par défaut — sinon une couche désactivée reviendrait toute seule.
+    // Respecte l'état actuel des cases à cocher plutôt que de tout réafficher
+    // par défaut — sinon une couche désactivée reviendrait toute seule.
     const muniBtn = document.getElementById("toggle-municipalities");
     if (muniBtn && !muniBtn.classList.contains("active")) {
       ["gt-municipality-fill", "gt-municipality-outline", "gt-municipality-label"].forEach(id => {
@@ -1456,8 +1652,34 @@ function setMapStyle(styleKey) {
     }
 
     const floodBtn = document.getElementById("toggle-flood-zones");
-    if (floodBtn && !floodBtn.classList.contains("active")) {
+    if (floodBtn && !floodBtn.checked) {
       ["gt-flood-zone-fill", "gt-flood-zone-outline"].forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+      });
+    }
+
+    const landslideBtn = document.getElementById("toggle-landslide-zones");
+    if (landslideBtn && !landslideBtn.checked) {
+      ["gt-landslide-fill", "gt-landslide-outline"].forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+      });
+    }
+
+    const contamBtn = document.getElementById("toggle-contaminated-sites");
+    if (contamBtn && !contamBtn.checked) {
+      if (map.getLayer("gt-contaminated-points")) map.setLayoutProperty("gt-contaminated-points", "visibility", "none");
+    }
+
+    const erosionBtn = document.getElementById("toggle-coastal-erosion");
+    if (erosionBtn && !erosionBtn.checked) {
+      ["gt-coastal-erosion-fill", "gt-coastal-erosion-outline"].forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+      });
+    }
+
+    const agriBtn = document.getElementById("toggle-agricultural-zone");
+    if (agriBtn && !agriBtn.checked) {
+      ["gt-agricultural-fill", "gt-agricultural-outline"].forEach(id => {
         if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
       });
     }

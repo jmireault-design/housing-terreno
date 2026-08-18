@@ -52,6 +52,31 @@ const CONFIG = {
     sourceLayer: "flood_zones"
   },
 
+  // Zones de glissements de terrain (ZPEGT), généré via download_landslide_zones.sh + tippecanoe.
+  landslideZonesTileset: {
+    id: "jmireault.tmnqyt",
+    sourceLayer: "landslide_zones"
+  },
+
+  // Répertoire des terrains contaminés (GTC), généré via download_contaminated_sites.py + tippecanoe.
+  contaminatedSitesTileset: {
+    id: "jmireault.hc0pul",
+    sourceLayer: "contaminated_sites"
+  },
+
+  // Zone agricole protégée (CPTAQ), généré via download_agricultural_zone.sh + tippecanoe.
+  agriculturalZoneTileset: {
+    id: "jmireault.kiye0n",
+    sourceLayer: "agricultural_zone"
+  },
+
+  // Zones de contraintes érosion côtière / mouvements de terrain (ZEMT), généré
+  // via download_coastal_erosion.py + tippecanoe.
+  coastalErosionTileset: {
+    id: "jmireault.kpao8u",
+    sourceLayer: "coastal_erosion"
+  },
+
   // Tileset de points matricule (mat18 + code_mun), généré via extract_matricule_points.sh
   // + tippecanoe. Permet de retrouver le matricule d'un lot au clic, peu importe la ville.
   // Laisser id vide si non configuré.

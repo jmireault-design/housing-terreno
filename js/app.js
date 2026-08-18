@@ -207,6 +207,21 @@ function wireUI() {
     });
   }
 
+  // Menu déroulant "Couches de risque"
+  const layersDropdownToggle = document.getElementById("layers-dropdown-toggle");
+  const layersDropdownMenu = document.getElementById("layers-dropdown-menu");
+  if (layersDropdownToggle && layersDropdownMenu) {
+    layersDropdownToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      layersDropdownMenu.classList.toggle("open");
+    });
+    document.addEventListener("click", (e) => {
+      if (!layersDropdownMenu.contains(e.target) && e.target !== layersDropdownToggle) {
+        layersDropdownMenu.classList.remove("open");
+      }
+    });
+  }
+
   // Afficher / masquer les limites municipales
   const muniToggle = document.getElementById("toggle-municipalities");
   if (muniToggle) {
@@ -224,16 +239,67 @@ function wireUI() {
   // Afficher / masquer les zones inondables (+ sa légende)
   const floodToggle = document.getElementById("toggle-flood-zones");
   if (floodToggle) {
-    floodToggle.addEventListener("click", () => {
+    floodToggle.addEventListener("change", () => {
       if (!map) return;
       const layers = ["gt-flood-zone-fill", "gt-flood-zone-outline"];
-      const isVisible = floodToggle.classList.contains("active");
       layers.forEach(id => {
-        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", isVisible ? "none" : "visible");
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", floodToggle.checked ? "visible" : "none");
       });
-      floodToggle.classList.toggle("active", !isVisible);
       const floodLegend = document.getElementById("flood-legend");
-      if (floodLegend) floodLegend.style.display = isVisible ? "none" : "block";
+      if (floodLegend) floodLegend.style.display = floodToggle.checked ? "block" : "none";
+    });
+  }
+
+  // Afficher / masquer les zones de glissements de terrain
+  const landslideToggle = document.getElementById("toggle-landslide-zones");
+  if (landslideToggle) {
+    landslideToggle.addEventListener("change", () => {
+      if (!map) return;
+      const layers = ["gt-landslide-fill", "gt-landslide-outline"];
+      layers.forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", landslideToggle.checked ? "visible" : "none");
+      });
+      const landslideLegend = document.getElementById("landslide-legend");
+      if (landslideLegend) landslideLegend.style.display = landslideToggle.checked ? "block" : "none";
+    });
+  }
+
+  // Afficher / masquer les terrains contaminés
+  const contamToggle = document.getElementById("toggle-contaminated-sites");
+  if (contamToggle) {
+    contamToggle.addEventListener("change", () => {
+      if (!map) return;
+      ["gt-contaminated-halo", "gt-contaminated-points"].forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", contamToggle.checked ? "visible" : "none");
+      });
+      const contamLegend = document.getElementById("contaminated-legend");
+      if (contamLegend) contamLegend.style.display = contamToggle.checked ? "block" : "none";
+    });
+  }
+
+  // Afficher / masquer les zones d'érosion côtière / mouvements de terrain
+  const erosionToggle = document.getElementById("toggle-coastal-erosion");
+  if (erosionToggle) {
+    erosionToggle.addEventListener("change", () => {
+      if (!map) return;
+      ["gt-coastal-erosion-fill", "gt-coastal-erosion-outline"].forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", erosionToggle.checked ? "visible" : "none");
+      });
+      const erosionLegend = document.getElementById("coastal-erosion-legend");
+      if (erosionLegend) erosionLegend.style.display = erosionToggle.checked ? "block" : "none";
+    });
+  }
+
+  // Afficher / masquer la zone agricole protégée
+  const agriToggle = document.getElementById("toggle-agricultural-zone");
+  if (agriToggle) {
+    agriToggle.addEventListener("change", () => {
+      if (!map) return;
+      ["gt-agricultural-fill", "gt-agricultural-outline"].forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", agriToggle.checked ? "visible" : "none");
+      });
+      const agriLegend = document.getElementById("agricultural-legend");
+      if (agriLegend) agriLegend.style.display = agriToggle.checked ? "block" : "none";
     });
   }
 

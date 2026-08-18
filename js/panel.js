@@ -117,6 +117,44 @@ function renderPropertyPanel(p) {
       </div>
     ` : ""}
 
+    ${p.landslideZone ? `
+      <div style="display:flex; align-items:flex-start; gap:8px; background:rgba(180,83,9,0.1); border:1px solid rgba(180,83,9,0.35); border-radius:var(--radius-md,8px); padding:10px 12px; margin-bottom:12px;">
+        <i class="ti ti-alert-triangle" style="color:#B45309; font-size:18px; flex-shrink:0; margin-top:1px;"></i>
+        <div style="font-size:12px; color:#B45309;">
+          <strong>Zone de glissement de terrain (ZPEGT) : ${p.landslideZone}</strong>
+        </div>
+      </div>
+    ` : ""}
+
+    ${p.contaminatedSite ? `
+      <div style="display:flex; align-items:flex-start; gap:8px; background:rgba(87,13,248,0.08); border:1px solid rgba(87,13,248,0.3); border-radius:var(--radius-md,8px); padding:10px 12px; margin-bottom:12px;">
+        <i class="ti ti-alert-triangle" style="color:#5B21B6; font-size:18px; flex-shrink:0; margin-top:1px;"></i>
+        <div style="font-size:12px; color:#5B21B6;">
+          <strong>Terrain contaminé (répertoire GTC)</strong>
+          <div style="color:var(--color-text-tertiary); margin-top:2px;">Milieu affecté : ${p.contaminatedSiteMilieu || "—"} · Dossier ${p.contaminatedSite}</div>
+        </div>
+      </div>
+    ` : ""}
+
+    ${p.coastalErosionZone ? `
+      <div style="display:flex; align-items:flex-start; gap:8px; background:rgba(8,145,178,0.08); border:1px solid rgba(8,145,178,0.3); border-radius:var(--radius-md,8px); padding:10px 12px; margin-bottom:12px;">
+        <i class="ti ti-alert-triangle" style="color:#0891B2; font-size:18px; flex-shrink:0; margin-top:1px;"></i>
+        <div style="font-size:12px; color:#0891B2;">
+          <strong>Zone de contrainte : érosion côtière / mouvement de terrain (ZEMT)</strong>
+        </div>
+      </div>
+    ` : ""}
+
+    ${p.inAgriculturalZone ? `
+      <div style="display:flex; align-items:flex-start; gap:8px; background:rgba(77,124,15,0.08); border:1px solid rgba(77,124,15,0.3); border-radius:var(--radius-md,8px); padding:10px 12px; margin-bottom:12px;">
+        <i class="ti ti-info-circle" style="color:#4D7C0F; font-size:18px; flex-shrink:0; margin-top:1px;"></i>
+        <div style="font-size:12px; color:#4D7C0F;">
+          <strong>Situé en zone agricole protégée (CPTAQ)</strong>
+          <div style="color:var(--color-text-tertiary); margin-top:2px;">Restrictions possibles sur la construction/le lotissement — informatif, sans valeur légale.</div>
+        </div>
+      </div>
+    ` : ""}
+
     ${streetViewBlock(p)}
 
     <div class="gt-stat-grid">
@@ -1424,7 +1462,7 @@ function attachPropertyPanelHandlers(p) {
   // Recherche automatique des infos officielles manquantes (matricule, valeurs,
   // superficie, zone inondable) — sans bouton, une seule fois par immeuble tant qu'on
   // n'a pas essayé.
-  const needsLookup = (!p.matricule || (!p.landValue && !p.buildingValue) || (!p.lotAreaSqM && !p.lotAreaSqFt) || p.floodZoneChecked === undefined);
+  const needsLookup = (!p.matricule || (!p.landValue && !p.buildingValue) || (!p.lotAreaSqM && !p.lotAreaSqFt) || p.floodZoneChecked === undefined || p.landslideZoneChecked === undefined || p.contaminatedSiteChecked === undefined || p.agriculturalZoneChecked === undefined || p.coastalErosionChecked === undefined);
   if (needsLookup && !p._lookupAttempted) {
     p._lookupAttempted = true;
     (async () => {
@@ -1450,6 +1488,39 @@ function attachPropertyPanelHandlers(p) {
         p.floodZoneChecked = true;
         p.floodZone = flood ? flood.description : null;
         p.floodZoneReport = flood ? flood.report : null;
+        foundSomething = true;
+      }
+
+      // Zone de glissement de terrain (ZPEGT)
+      if (p.landslideZoneChecked === undefined && typeof fetchLandslideZoneStatus === "function") {
+        const landslide = await fetchLandslideZoneStatus(p.lng, p.lat);
+        p.landslideZoneChecked = true;
+        p.landslideZone = landslide ? landslide.label : null;
+        foundSomething = true;
+      }
+
+      // Terrain contaminé (GTC)
+      if (p.contaminatedSiteChecked === undefined && typeof fetchContaminatedSiteStatus === "function") {
+        const contam = await fetchContaminatedSiteStatus(p.lng, p.lat);
+        p.contaminatedSiteChecked = true;
+        p.contaminatedSite = contam ? contam.reference : null;
+        p.contaminatedSiteMilieu = contam ? contam.milieu : null;
+        foundSomething = true;
+      }
+
+      // Zone agricole protégée (CPTAQ)
+      if (p.agriculturalZoneChecked === undefined && typeof fetchAgriculturalZoneStatus === "function") {
+        const agri = await fetchAgriculturalZoneStatus(p.lng, p.lat);
+        p.agriculturalZoneChecked = true;
+        p.inAgriculturalZone = agri ? true : false;
+        foundSomething = true;
+      }
+
+      // Zone de contrainte érosion côtière / mouvements de terrain (ZEMT)
+      if (p.coastalErosionChecked === undefined && typeof fetchCoastalErosionStatus === "function") {
+        const erosion = await fetchCoastalErosionStatus(p.lng, p.lat);
+        p.coastalErosionChecked = true;
+        p.coastalErosionZone = erosion ? true : false;
         foundSomething = true;
       }
 
