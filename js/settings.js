@@ -7,7 +7,8 @@ const SETTINGS_GROUPS = [
   { field: "propertyTypes", label: "Type d'immeuble", promptLabel: "Type d'immeuble" },
   { field: "loanTypes", label: "Type de prêt", promptLabel: "Type de prêt" },
   { field: "ranks", label: "Rang de garantie", promptLabel: "Rang" },
-  { field: "risks", label: "Niveau de risque", promptLabel: "Niveau de risque" }
+  { field: "risks", label: "Niveau de risque", promptLabel: "Niveau de risque" },
+  { field: "constructionTypes", label: "Genre de construction", promptLabel: "Genre de construction" }
 ];
 
 function renderSettingsPage() {

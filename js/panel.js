@@ -102,10 +102,11 @@ function renderPropertyPanel(p) {
       </button>
     </div>
     <div class="gt-panel-addr">${p.neighborhood ? p.neighborhood + ", " : ""}${p.city}${lotInfo.postalCode ? ", " + lotInfo.postalCode : ""} • ${p.type}</div>
-    <div style="font-size:12px;color:var(--color-text-tertiary);margin:2px 0 10px;" id="lot-info-line">
+    <div style="font-size:12px;color:var(--color-text-tertiary);margin:2px 0 2px;" id="lot-info-line">
       ${lotInfo.lotNumber ? `Lot ${lotInfo.lotNumber}` : ""}${lotInfo.lotNumber && lotInfo.matricule ? " · " : ""}${lotInfo.matricule ? `Matricule ${lotInfo.matricule}` : ""}${(lotInfo.lotNumber || lotInfo.matricule) && sqft ? " · " : ""}${sqft ? `${sqft.toLocaleString("fr-CA")} pi²` : ""}
       ${(!lotInfo.matricule || (!p.landValue && !p.buildingValue) || !sqft) && !p._lookupAttempted ? `<span id="auto-lookup-status"><i class="ti ti-loader-2"></i> Recherche des infos officielles...</span>` : ""}
     </div>
+    ${(p.yearBuilt || p.constructionCode) ? `<div style="font-size:12px;color:var(--color-text-tertiary);margin:0 0 10px;">${p.yearBuilt ? `Construit en ${p.yearBuilt}` : ""}${p.yearBuilt && p.constructionCode ? " · " : ""}${p.constructionCode ? `Genre de construction : ${p.constructionCode}` : ""}</div>` : ""}
 
     ${p.floodZone ? `
       <div style="display:flex; align-items:flex-start; gap:8px; background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.35); border-radius:var(--radius-md,8px); padding:10px 12px; margin-bottom:12px;">
@@ -331,6 +332,15 @@ function renderPropertyEditForm(p) {
       </label>
       <label>Quartier
         <input id="pedit-neighborhood" type="text" value="${p.neighborhood || ""}" placeholder="Optionnel" />
+      </label>
+      <label>Année de construction
+        <input id="pedit-yearBuilt" type="text" inputmode="numeric" value="${p.yearBuilt || ""}" placeholder="Ex. 1985" />
+      </label>
+      <label>Genre de construction
+        <select id="pedit-constructionCode">
+          <option value="">—</option>
+          ${CONFIG.options.constructionTypes.map(t => `<option value="${t}" ${t === p.constructionCode ? "selected" : ""}>${t}</option>`).join("")}
+        </select>
       </label>
       <label>Propriétaire
         <input id="pedit-owner" type="text" value="${p.owner || ""}" placeholder="Nom" />
@@ -692,6 +702,8 @@ function attachPropertyEditHandlers(p) {
     p.type = document.getElementById("pedit-type").value;
     p.city = document.getElementById("pedit-city").value.trim();
     p.neighborhood = document.getElementById("pedit-neighborhood").value.trim();
+    p.yearBuilt = parseInt(document.getElementById("pedit-yearBuilt").value, 10) || p.yearBuilt || null;
+    p.constructionCode = document.getElementById("pedit-constructionCode").value.trim() || p.constructionCode || null;
     p.owner = document.getElementById("pedit-owner").value.trim();
     p.value = parseFormattedNumber(document.getElementById("pedit-value").value);
     p.landValue = parseFormattedNumber(document.getElementById("pedit-landvalue").value);
@@ -1247,6 +1259,8 @@ function renderSearchPanel(p) {
       ${p.lotNumber ? `<br/>Numéro de lot (cadastre) : <strong>${p.lotNumber}</strong>` : ""}
       ${p.matricule ? `<br/>Matricule : <strong>${p.matricule}</strong>` : ""}
       ${p.lotAreaSqM ? `<br/>Superficie du terrain : <strong>${p.lotAreaSqM.toLocaleString("fr-CA")} m²</strong> (${Math.round(p.lotAreaSqM * 10.7639).toLocaleString("fr-CA")} pi²)` : ""}
+      ${p.yearBuilt ? `<br/>Année de construction : <strong>${p.yearBuilt}</strong>` : ""}
+      ${p.constructionCode ? `<br/>Genre de construction : <strong>${p.constructionCode}</strong>` : ""}
       ${p.valuesFromOfficialRoll ? `<br/><span style="color:#0F6E56;"><i class="ti ti-circle-check-filled" style="font-size:13px;vertical-align:-2px;"></i> Valeurs terrain/bâtiment trouvées sur le rôle d'évaluation officiel</span>` : ""}
     </div>
 
@@ -1263,6 +1277,15 @@ function renderSearchPanel(p) {
       </label>
       <label>Quartier
         <input id="np-neighborhood" type="text" value="${p.neighborhood || ""}" placeholder="Optionnel" />
+      </label>
+      <label><span>Année de construction${p.yearBuilt ? ' <i class="ti ti-circle-check-filled" style="color:#0F6E56;font-size:13px;"></i>' : ""}</span>
+        <input id="np-yearBuilt" type="text" inputmode="numeric" value="${p.yearBuilt || ""}" placeholder="Ex. 1985" />
+      </label>
+      <label><span>Genre de construction${p.constructionCode ? ' <i class="ti ti-circle-check-filled" style="color:#0F6E56;font-size:13px;"></i>' : ""}</span>
+        <select id="np-constructionCode">
+          <option value="">—</option>
+          ${CONFIG.options.constructionTypes.map(t => `<option value="${t}" ${t === p.constructionCode ? "selected" : ""}>${t}</option>`).join("")}
+        </select>
       </label>
       <label>Propriétaire
         <input id="np-owner" type="text" placeholder="Nom" />
@@ -1343,6 +1366,8 @@ function attachSearchPanelHandlers(p) {
       addr: p.addr,
       city: document.getElementById("np-city").value.trim() || p.city || "",
       neighborhood: document.getElementById("np-neighborhood").value.trim(),
+      yearBuilt: parseInt(document.getElementById("np-yearBuilt").value, 10) || p.yearBuilt || null,
+      constructionCode: document.getElementById("np-constructionCode").value.trim() || p.constructionCode || null,
       type: document.getElementById("np-type").value,
       owner: document.getElementById("np-owner").value.trim(),
       value: parseFormattedNumber(document.getElementById("np-value").value),
@@ -1475,6 +1500,8 @@ function attachPropertyPanelHandlers(p) {
         foundSomething = true;
         if (vals.matricule && !p.matricule) p.matricule = vals.matricule;
         p.codeMun = vals.codeMun; p.secteur = vals.secteur; p.typePropriete = vals.typePropriete;
+        if (vals.yearBuilt && !p.yearBuilt) p.yearBuilt = vals.yearBuilt;
+        if (vals.constructionCode && !p.constructionCode) p.constructionCode = vals.constructionCode;
         if (!p.landValue && !p.buildingValue) {
           p.landValue = vals.landValue;
           p.buildingValue = vals.buildingValue;

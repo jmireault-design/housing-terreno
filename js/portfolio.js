@@ -198,7 +198,7 @@ function wireInlineEdits(container) {
       } else if (propertyId && ["postalCode", "lotNumber", "matricule"].includes(field)) {
         const p = state.propertyMap[propertyId];
         if (p) { p[field] = val; savePropertyOverride(p); }
-      } else if (propertyId && !loanId && ["addr", "neighborhood", "owner", "value", "city", "type"].includes(field)) {
+      } else if (propertyId && !loanId && ["addr", "neighborhood", "owner", "value", "city", "type", "yearBuilt"].includes(field)) {
         const p = state.propertyMap[propertyId];
         if (p) {
           p[field] = val;
@@ -249,6 +249,7 @@ function renderPropertiesList() {
           <th>Adresse</th>
           <th>Propriétaire</th>
           <th>Valeur</th>
+          <th>Année construction</th>
           <th>Total garanti</th>
           <th>LTV total</th>
           <th>Prêts</th>
@@ -277,6 +278,7 @@ function renderPropertiesList() {
               </td>
               <td><input class="gt-inline-edit" data-property-id="${p.id}" data-field="owner" value="${p.owner || ""}" /></td>
               <td><input class="gt-inline-edit gt-inline-edit-num" data-property-id="${p.id}" data-field="value" value="${formatNumberWithCommas(p.value)}" /></td>
+              <td><input class="gt-inline-edit" data-property-id="${p.id}" data-field="yearBuilt" value="${p.yearBuilt || ""}" placeholder="—" style="width:70px" /></td>
               <td style="font-weight:500">${fmtK(totalGuar)}</td>
               <td style="color:${ltvColor(lv)};font-weight:500">${lv}%</td>
               <td><span class="gt-count-pill"><i class="ti ti-file-invoice"></i> ${loans.length}</span></td>

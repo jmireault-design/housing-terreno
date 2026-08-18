@@ -110,6 +110,18 @@ const CONFIG = {
     loanTypes: ["Personnel", "Corporatif", "Hypothécaire", "Marge de crédit", "Co-signé", "Actionnaire", "Autre"],
     ranks: ["1er rang", "2e rang", "3e rang", "Sans garantie", "Libéré"],
     risks: ["Faible", "Moyen", "Élevé"],
+
+    // Genre de construction (code officiel RL0310A du rôle d'évaluation, 1 à 5).
+    // Confiance élevée pour 1 et 2 (confirmés dans de vrais rôles municipaux) ;
+    // 3-5 sont des meilleures estimations basées sur la terminologie standard —
+    // modifiable dans Paramètres si tu confirmes le vrai libellé d'un immeuble.
+    constructionTypes: [
+      "1 - De plain-pied",
+      "2 - À étages entiers",
+      "3 - À étages mansardés",
+      "4 - À paliers multiples",
+      "5 - En rangée"
+    ],
     statuses: ["active", "pending", "high", "missing", "verified", "released", "refused"]
   },
 
@@ -195,6 +207,7 @@ function saveCustomOptions() {
       ranks: CONFIG.options.ranks,
       risks: CONFIG.options.risks,
       statuses: CONFIG.options.statuses,
+      constructionTypes: CONFIG.options.constructionTypes,
       customStatuses: Object.keys(CONFIG.statusMap)
         .filter(k => CONFIG.statusMap[k].custom)
         .map(k => ({ key: k, label: CONFIG.statusMap[k].label, color: CONFIG.statusMap[k].color }))
@@ -221,7 +234,7 @@ function applyCustomOptionsOnBoot() {
 
   // Remplace entièrement chaque liste par la version sauvegardée (permet aussi bien
   // les ajouts que les suppressions faites depuis la page Paramètres).
-  ["propertyTypes", "loanTypes", "ranks", "risks", "statuses"].forEach(field => {
+  ["propertyTypes", "loanTypes", "ranks", "risks", "statuses", "constructionTypes"].forEach(field => {
     if (Array.isArray(saved[field]) && saved[field].length > 0) {
       CONFIG.options[field] = saved[field];
     }

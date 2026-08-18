@@ -1173,7 +1173,7 @@ body.dark-theme .gt-settings-group {
   grid-template-columns: 190px 1fr 0fr !important;
 }
 .gt-map-wrap.panel-open {
-  grid-template-columns: 190px 1fr 400px !important;
+  grid-template-columns: 190px 1fr 460px !important;
 }
 
 /* =====================================================================

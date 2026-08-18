@@ -86,6 +86,7 @@ function initMap() {
     setupAgriculturalZoneLayer();
     setupCoastalErosionLayer();
     setupClusterLayers();
+    syncRiskLayerVisibilityFromCheckboxes();
     refreshMap();
     wirePinModeClick();
     map.on("render", scheduleBubbleRender);
@@ -93,6 +94,16 @@ function initMap() {
 }
 
 /* ---------- Regroupement visuel par municipalité (couleurs pastel, visible en dézoomant) ---------- */
+// Trouve la première couche d'étiquettes (noms de rues, adresses, villes) du style
+// actif, pour insérer nos couches personnalisées EN DESSOUS — sinon elles cachent
+// les adresses du fond de carte là où elles se superposent.
+function getFirstLabelLayerId() {
+  const layers = map.getStyle() && map.getStyle().layers;
+  if (!layers) return undefined;
+  const symbolLayer = layers.find(l => l.type === "symbol");
+  return symbolLayer ? symbolLayer.id : undefined;
+}
+
 function setupMunicipalityLayer() {
   if (!CONFIG.municipalityTileset || !CONFIG.municipalityTileset.id) return;
   if (map.getLayer("gt-municipality-fill")) return; // déjà en place
@@ -131,7 +142,7 @@ function setupMunicipalityLayer() {
         13, 0
       ]
     }
-  });
+  }, getFirstLabelLayerId());
 
   map.addLayer({
     id: "gt-municipality-outline",
@@ -144,7 +155,7 @@ function setupMunicipalityLayer() {
       "line-color": "rgba(90,90,105,0.32)",
       "line-width": 1.2
     }
-  });
+  }, getFirstLabelLayerId());
 
   map.addLayer({
     id: "gt-municipality-label",
@@ -163,7 +174,7 @@ function setupMunicipalityLayer() {
       "text-halo-color": "rgba(255,255,255,0.85)",
       "text-halo-width": 1.2
     }
-  });
+  }, getFirstLabelLayerId());
 }
 
 /* ---------- Zones inondables officielles (BDZI) ---------- */
@@ -196,7 +207,7 @@ function setupFloodZoneLayer() {
       "fill-color": floodColorMatch,
       "fill-opacity": 0.45
     }
-  });
+  }, getFirstLabelLayerId());
 
   map.addLayer({
     id: "gt-flood-zone-outline",
@@ -208,7 +219,7 @@ function setupFloodZoneLayer() {
       "line-color": floodColorMatch,
       "line-width": 1.2
     }
-  });
+  }, getFirstLabelLayerId());
 }
 
 // Vérifie si un point (immeuble) tombe dans une zone inondable connue, via Tilequery
@@ -240,7 +251,7 @@ function setupLandslideZoneLayer() {
       "fill-color": "#B45309",
       "fill-opacity": 0.35
     }
-  });
+  }, getFirstLabelLayerId());
 
   map.addLayer({
     id: "gt-landslide-outline",
@@ -252,7 +263,7 @@ function setupLandslideZoneLayer() {
       "line-color": "#92400E",
       "line-width": 1
     }
-  });
+  }, getFirstLabelLayerId());
 }
 
 async function fetchLandslideZoneStatus(lng, lat) {
@@ -296,7 +307,7 @@ function setupContaminatedSitesLayer() {
       "circle-opacity": 0.25,
       "circle-blur": 0.6
     }
-  });
+  }, getFirstLabelLayerId());
 
   map.addLayer({
     id: "gt-contaminated-points",
@@ -310,7 +321,7 @@ function setupContaminatedSitesLayer() {
       "circle-stroke-color": "#FFFFFF",
       "circle-stroke-width": 2.5
     }
-  });
+  }, getFirstLabelLayerId());
 }
 
 async function fetchContaminatedSiteStatus(lng, lat) {
@@ -344,7 +355,7 @@ function setupAgriculturalZoneLayer() {
       "fill-color": "#4D7C0F",
       "fill-opacity": 0.2
     }
-  });
+  }, getFirstLabelLayerId());
 
   map.addLayer({
     id: "gt-agricultural-outline",
@@ -356,7 +367,7 @@ function setupAgriculturalZoneLayer() {
       "line-color": "#4D7C0F",
       "line-width": 1
     }
-  });
+  }, getFirstLabelLayerId());
 }
 
 async function fetchAgriculturalZoneStatus(lng, lat) {
@@ -386,7 +397,7 @@ function setupCoastalErosionLayer() {
       "fill-color": "#0891B2",
       "fill-opacity": 0.35
     }
-  });
+  }, getFirstLabelLayerId());
 
   map.addLayer({
     id: "gt-coastal-erosion-outline",
@@ -398,7 +409,7 @@ function setupCoastalErosionLayer() {
       "line-color": "#0E7490",
       "line-width": 1
     }
-  });
+  }, getFirstLabelLayerId());
 }
 
 async function fetchCoastalErosionStatus(lng, lat) {
@@ -603,6 +614,8 @@ async function selectByLotNumber(rawQuery) {
     built.valuesFromOfficialRoll = true;
     if (vals.matricule && !built.matricule) built.matricule = vals.matricule;
     built.codeMun = vals.codeMun; built.secteur = vals.secteur; built.typePropriete = vals.typePropriete;
+    if (vals.yearBuilt && !built.yearBuilt) built.yearBuilt = vals.yearBuilt;
+    if (vals.constructionCode && !built.constructionCode) built.constructionCode = vals.constructionCode;
     renderPanel();
   });
 }
@@ -702,6 +715,15 @@ async function tilequeryLookup(tilesetId, lng, lat) {
 }
 
 /* ---------- Interroge le tileset des vraies valeurs Terrain/Bâtiment/Total (rôle officiel) ---------- */
+// Traduit le code brut RL0310A (1 à 5) reçu du rôle d'évaluation vers le libellé
+// correspondant dans la liste gérée (Paramètres) — pour que le menu déroulant
+// présélectionne le bon choix. Si le libellé a été renommé/retiré par l'utilisateur,
+// on retombe simplement sur le code brut.
+function mapConstructionCodeToLabel(rawCode) {
+  const match = CONFIG.options.constructionTypes.find(t => t.startsWith(`${rawCode} -`));
+  return match || rawCode;
+}
+
 async function fetchRealEstateValues(lng, lat) {
   if (!CONFIG.valuesTileset || !CONFIG.valuesTileset.id) return null;
   const props = await tilequeryLookup(CONFIG.valuesTileset.id, lng, lat);
@@ -712,7 +734,9 @@ async function fetchRealEstateValues(lng, lat) {
   if (!land && !building && !matricule) return null;
   return {
     landValue: land, buildingValue: building, totalValue: land + building, matricule,
-    codeMun: props.code_mun || "", secteur: props.secteur || "", typePropriete: props.type_propriete || ""
+    codeMun: props.code_mun || "", secteur: props.secteur || "", typePropriete: props.type_propriete || "",
+    yearBuilt: props.annee_construction ? Number(props.annee_construction) : null,
+    constructionCode: props.genre_construction ? mapConstructionCodeToLabel(props.genre_construction) : null
   };
 }
 
@@ -855,6 +879,8 @@ function selectByCoordinate(lng, lat) {
     built.valuesFromOfficialRoll = true;
     if (vals.matricule && !built.matricule) built.matricule = vals.matricule;
     built.codeMun = vals.codeMun; built.secteur = vals.secteur; built.typePropriete = vals.typePropriete;
+    if (vals.yearBuilt && !built.yearBuilt) built.yearBuilt = vals.yearBuilt;
+    if (vals.constructionCode && !built.constructionCode) built.constructionCode = vals.constructionCode;
     renderPanel();
   });
 
@@ -937,6 +963,8 @@ function selectSearchResult(result, lng, lat) {
     built.valuesFromOfficialRoll = true;
     if (vals.matricule && !built.matricule) built.matricule = vals.matricule;
     built.codeMun = vals.codeMun; built.secteur = vals.secteur; built.typePropriete = vals.typePropriete;
+    if (vals.yearBuilt && !built.yearBuilt) built.yearBuilt = vals.yearBuilt;
+    if (vals.constructionCode && !built.constructionCode) built.constructionCode = vals.constructionCode;
     renderPanel();
   });
 
@@ -1265,6 +1293,8 @@ function selectParcelResult(feature, lng, lat) {
     built.valuesFromOfficialRoll = true;
     if (vals.matricule && !built.matricule) built.matricule = vals.matricule;
     built.codeMun = vals.codeMun; built.secteur = vals.secteur; built.typePropriete = vals.typePropriete;
+    if (vals.yearBuilt && !built.yearBuilt) built.yearBuilt = vals.yearBuilt;
+    if (vals.constructionCode && !built.constructionCode) built.constructionCode = vals.constructionCode;
     renderPanel();
   });
 
@@ -1631,6 +1661,54 @@ function clearCollateralHighlights() {
 }
 
 /* ---------- Changement de style ---------- */
+// Applique l'état actuel des cases à cocher (Municipalités + les 5 couches de
+// risque) aux couches de la carte — utilisé au chargement initial ET après chaque
+// changement de style, pour qu'une couche désactivée ne revienne jamais toute seule.
+function syncRiskLayerVisibilityFromCheckboxes() {
+  const muniBtn = document.getElementById("toggle-municipalities");
+  if (muniBtn && !muniBtn.classList.contains("active")) {
+    ["gt-municipality-fill", "gt-municipality-outline", "gt-municipality-label"].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+    });
+  }
+
+  const floodBtn = document.getElementById("toggle-flood-zones");
+  if (floodBtn && !floodBtn.checked) {
+    ["gt-flood-zone-fill", "gt-flood-zone-outline"].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+    });
+  }
+
+  const landslideBtn = document.getElementById("toggle-landslide-zones");
+  if (landslideBtn && !landslideBtn.checked) {
+    ["gt-landslide-fill", "gt-landslide-outline"].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+    });
+  }
+
+  const contamBtn = document.getElementById("toggle-contaminated-sites");
+  if (contamBtn && !contamBtn.checked) {
+    ["gt-contaminated-halo", "gt-contaminated-points"].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+    });
+  }
+
+  const erosionBtn = document.getElementById("toggle-coastal-erosion");
+  if (erosionBtn && !erosionBtn.checked) {
+    ["gt-coastal-erosion-fill", "gt-coastal-erosion-outline"].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+    });
+  }
+
+  const agriBtn = document.getElementById("toggle-agricultural-zone");
+  if (agriBtn && !agriBtn.checked) {
+    ["gt-agricultural-fill", "gt-agricultural-outline"].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+    });
+  }
+}
+
+/* ---------- Changement de style ---------- */
 function setMapStyle(styleKey) {
   map.setStyle(CONFIG.styles[styleKey]);
   map.once("style.load", () => {
@@ -1641,48 +1719,7 @@ function setMapStyle(styleKey) {
     setupContaminatedSitesLayer();
     setupAgriculturalZoneLayer();
     setupCoastalErosionLayer();
-
-    // Respecte l'état actuel des cases à cocher plutôt que de tout réafficher
-    // par défaut — sinon une couche désactivée reviendrait toute seule.
-    const muniBtn = document.getElementById("toggle-municipalities");
-    if (muniBtn && !muniBtn.classList.contains("active")) {
-      ["gt-municipality-fill", "gt-municipality-outline", "gt-municipality-label"].forEach(id => {
-        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
-      });
-    }
-
-    const floodBtn = document.getElementById("toggle-flood-zones");
-    if (floodBtn && !floodBtn.checked) {
-      ["gt-flood-zone-fill", "gt-flood-zone-outline"].forEach(id => {
-        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
-      });
-    }
-
-    const landslideBtn = document.getElementById("toggle-landslide-zones");
-    if (landslideBtn && !landslideBtn.checked) {
-      ["gt-landslide-fill", "gt-landslide-outline"].forEach(id => {
-        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
-      });
-    }
-
-    const contamBtn = document.getElementById("toggle-contaminated-sites");
-    if (contamBtn && !contamBtn.checked) {
-      if (map.getLayer("gt-contaminated-points")) map.setLayoutProperty("gt-contaminated-points", "visibility", "none");
-    }
-
-    const erosionBtn = document.getElementById("toggle-coastal-erosion");
-    if (erosionBtn && !erosionBtn.checked) {
-      ["gt-coastal-erosion-fill", "gt-coastal-erosion-outline"].forEach(id => {
-        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
-      });
-    }
-
-    const agriBtn = document.getElementById("toggle-agricultural-zone");
-    if (agriBtn && !agriBtn.checked) {
-      ["gt-agricultural-fill", "gt-agricultural-outline"].forEach(id => {
-        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
-      });
-    }
+    syncRiskLayerVisibilityFromCheckboxes();
 
     // Les lots (cadastre) ne se rattachent que si le bouton "Lots" est actif
     const parcelBtn = document.getElementById("toggle-parcels");

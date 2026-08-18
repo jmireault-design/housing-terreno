@@ -107,7 +107,7 @@
             </div>
           </div>
 
-          <div class="gt-flood-legend" id="flood-legend">
+          <div class="gt-flood-legend" id="flood-legend" style="display:none;">
             <div class="gt-value-legend-title">Zones inondables (BDZI)</div>
             <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#97DBF2;"></span>Grand courant</div>
             <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#FF0000;"></span>Faible courant</div>
@@ -115,12 +115,12 @@
             <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#0070FF;"></span>Autre zone</div>
           </div>
 
-          <div class="gt-flood-legend" id="landslide-legend">
+          <div class="gt-flood-legend" id="landslide-legend" style="display:none;">
             <div class="gt-value-legend-title">Glissements de terrain (ZPEGT)</div>
             <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#B45309;"></span>Zone de contrainte</div>
           </div>
 
-          <div class="gt-flood-legend" id="contaminated-legend">
+          <div class="gt-flood-legend" id="contaminated-legend" style="display:none;">
             <div class="gt-value-legend-title">Terrains contaminés (GTC)</div>
             <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#1A1A1A;"></span>Sol</div>
             <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#00A9E6;"></span>Eau souterraine</div>
@@ -128,12 +128,12 @@
             <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#686868;"></span>Indéterminé</div>
           </div>
 
-          <div class="gt-flood-legend" id="coastal-erosion-legend">
+          <div class="gt-flood-legend" id="coastal-erosion-legend" style="display:none;">
             <div class="gt-value-legend-title">Érosion côtière / mvt terrain (ZEMT)</div>
             <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#0891B2;"></span>Zone de contrainte</div>
           </div>
 
-          <div class="gt-flood-legend" id="agricultural-legend">
+          <div class="gt-flood-legend" id="agricultural-legend" style="display:none;">
             <div class="gt-value-legend-title">Zone agricole (CPTAQ)</div>
             <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#4D7C0F;"></span>Zone agricole protégée</div>
           </div>
@@ -149,37 +149,39 @@
           </button>
         </div>
 
-        <div class="gt-parcel-toggle">
-          <button id="toggle-parcels" class="active" title="Afficher / masquer les lots">
-            <i class="ti ti-map-2"></i> Lots
-          </button>
-          <button id="toggle-municipalities" class="active" title="Afficher / masquer les limites municipales">
-            <i class="ti ti-map"></i> Municipalités
-          </button>
+        <div class="gt-parcel-toggle" style="flex-direction:column; align-items:flex-start;">
+          <div style="display:flex; gap:8px;">
+            <button id="toggle-parcels" class="active" title="Afficher / masquer les lots">
+              <i class="ti ti-map-2"></i> Lots
+            </button>
+            <button id="toggle-municipalities" class="active" title="Afficher / masquer les limites municipales">
+              <i class="ti ti-map"></i> Municipalités
+            </button>
+          </div>
 
           <div class="gt-layers-dropdown">
-            <button id="layers-dropdown-toggle" title="Couches de risque">
-              <i class="ti ti-layers-intersect"></i> Couches de risque <i class="ti ti-chevron-down"></i>
+            <button id="layers-dropdown-toggle" title="Risques">
+              <i class="ti ti-layers-intersect"></i> Risques <i class="ti ti-chevron-down"></i>
             </button>
             <div class="gt-layers-dropdown-menu" id="layers-dropdown-menu">
               <label class="gt-layers-dropdown-item">
-                <input type="checkbox" id="toggle-flood-zones" checked>
+                <input type="checkbox" id="toggle-flood-zones">
                 <i class="ti ti-droplet"></i> Zones inondables
               </label>
               <label class="gt-layers-dropdown-item">
-                <input type="checkbox" id="toggle-landslide-zones" checked>
+                <input type="checkbox" id="toggle-landslide-zones">
                 <i class="ti ti-mountain"></i> Glissements de terrain
               </label>
               <label class="gt-layers-dropdown-item">
-                <input type="checkbox" id="toggle-contaminated-sites" checked>
+                <input type="checkbox" id="toggle-contaminated-sites">
                 <i class="ti ti-biohazard"></i> Terrains contaminés
               </label>
               <label class="gt-layers-dropdown-item">
-                <input type="checkbox" id="toggle-coastal-erosion" checked>
+                <input type="checkbox" id="toggle-coastal-erosion">
                 <i class="ti ti-anchor"></i> Érosion côtière
               </label>
               <label class="gt-layers-dropdown-item">
-                <input type="checkbox" id="toggle-agricultural-zone" checked>
+                <input type="checkbox" id="toggle-agricultural-zone">
                 <i class="ti ti-tractor"></i> Zone agricole (CPTAQ)
               </label>
             </div>

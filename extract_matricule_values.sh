@@ -1,8 +1,8 @@
 #!/bin/bash
 # extract_matricule_values.sh
 # Enrichit les points matricule avec les vraies valeurs Terrain / Bâtiment / Total
-# (codes officiels RL0402A / RL0403A / RL0404A), ET le secteur / type de propriété
-# (RL0107A / RL0105A) pour permettre la comparaison à la moyenne du secteur.
+# (codes officiels RL0402A / RL0403A / RL0404A), le secteur / type de propriété
+# (RL0107A / RL0105A), ET l'année de construction (RL0307A).
 #
 # USAGE :
 #   chmod +x extract_matricule_values.sh
@@ -26,7 +26,7 @@ echo "Jointure locale (points + valeurs + secteur/type) sur la zone Montréal + 
 
 ogr2ogr -f GeoJSON matricule_values.geojson "$GPKG_FILE" \
   -dialect SQLite \
-  -sql "SELECT p.mat18 AS mat18, p.code_mun AS code_mun, v.rl0402a AS terrain, v.rl0403a AS batiment, v.rl0404a AS valeur_totale, v.rl0107a AS secteur, v.rl0105a AS type_propriete, p.geom AS geom FROM rol_unite_p_2026 p LEFT JOIN b05v_unite_evaln_2026 v ON p.mat18 = v.mat18 WHERE p.geom IS NOT NULL" \
+  -sql "SELECT p.mat18 AS mat18, p.code_mun AS code_mun, v.rl0402a AS terrain, v.rl0403a AS batiment, v.rl0404a AS valeur_totale, v.rl0107a AS secteur, v.rl0105a AS type_propriete, CAST(v.rl0307a AS INTEGER) AS annee_construction, v.rl0310a AS genre_construction, p.geom AS geom FROM rol_unite_p_2026 p LEFT JOIN b05v_unite_evaln_2026 v ON p.mat18 = v.mat18 WHERE p.geom IS NOT NULL" \
   -spat -74.3 45.3 -73.3 45.8 \
   -t_srs EPSG:4326
 
