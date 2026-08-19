@@ -904,20 +904,30 @@ body.dark-theme .gt-bubble-owner {
 }
 .gt-value-legend-bar {
   height: 10px;
-  border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    #6B1E07 0%,
-    #B0301A 12%,
-    #E07B1E 24%,
-    #F2D027 36%,
-    #A8D62B 48%,
-    #2FA84F 58%,
-    #1FA398 68%,
-    #2E7FD6 78%,
-    #6A5ACD 90%,
-    #9B4FC7 100%
-  );
+  border-radius: 2px;
+  display: flex;
+  overflow: hidden;
+  background: none;
+}
+.gt-value-legend-bar::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(to right,
+      #6B1E07 0%, #6B1E07 10%,
+      #B0301A 10%, #B0301A 20%,
+      #E07B1E 20%, #E07B1E 30%,
+      #F2D027 30%, #F2D027 40%,
+      #A8D62B 40%, #A8D62B 50%,
+      #2FA84F 50%, #2FA84F 60%,
+      #1FA398 60%, #1FA398 70%,
+      #2E7FD6 70%, #2E7FD6 80%,
+      #6A5ACD 80%, #6A5ACD 90%,
+      #9B4FC7 90%, #9B4FC7 100%
+    );
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
 .gt-value-legend-labels {
   display: flex;

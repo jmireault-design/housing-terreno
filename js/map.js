@@ -88,8 +88,24 @@ function initMap() {
     setupClusterLayers();
     syncRiskLayerVisibilityFromCheckboxes();
     refreshMap();
-    wirePinModeClick();
+    wireRightClickPreview();
     map.on("render", scheduleBubbleRender);
+  });
+}
+
+// Clic droit n'importe où sur la carte → aperçu rapide (adresse, Street View),
+// même par-dessus un lot coloré ou un immeuble. Contrairement à l'ancien mode
+// "Pin" (bouton à activer/désactiver), le clic droit n'entre jamais en conflit
+// avec les autres gestionnaires de clic (gauche) — rien d'autre ne l'utilise,
+// donc pas besoin de vérifier ce qui est "en dessous".
+let rightClickPreviewWired = false;
+function wireRightClickPreview() {
+  if (rightClickPreviewWired) return; // jamais de doublon, même si rappelée
+  rightClickPreviewWired = true;
+
+  map.on("contextmenu", (e) => {
+    e.preventDefault();
+    selectByCoordinate(e.lngLat.lng, e.lngLat.lat);
   });
 }
 
@@ -894,30 +910,6 @@ function selectByCoordinate(lng, lat) {
   });
 }
 
-/* ---------- Mode "Épingle" : clic libre sur la carte ---------- */
-let pinModeActive = false;
-
-function togglePinMode() {
-  pinModeActive = !pinModeActive;
-  const btn = document.getElementById("toggle-pin-mode");
-  if (btn) btn.classList.toggle("active", pinModeActive);
-  if (map) map.getCanvas().style.cursor = pinModeActive ? "crosshair" : "";
-  return pinModeActive;
-}
-
-function wirePinModeClick() {
-  map.on("click", (e) => {
-    if (!pinModeActive) return;
-    // Si le clic touche déjà un immeuble suivi ou un lot cliquable, laisse leurs
-    // propres gestionnaires s'en occuper (évite un double déclenchement).
-    const hit = map.queryRenderedFeatures(e.point, {
-      layers: ["unclustered-point", "clusters", "gt-city-parcel-fill"].filter(id => map.getLayer(id))
-    });
-    if (hit.length > 0) return;
-    selectByCoordinate(e.lngLat.lng, e.lngLat.lat);
-  });
-}
-
 
 function selectSearchResult(result, lng, lat) {
   clearCollateralHighlights();
@@ -1190,22 +1182,26 @@ function setupCityParcelLayer() {
       }
     });
 
-    // Interactions : chaque lot devient cliquable
-    map.on("mouseenter", "gt-city-parcel-fill", () => { map.getCanvas().style.cursor = "pointer"; });
-    map.on("mouseleave", "gt-city-parcel-fill", () => { map.getCanvas().style.cursor = ""; });
-    map.on("click", "gt-city-parcel-fill", (e) => {
-      if (!e.features || !e.features[0]) return;
-      const feature = e.features[0];
-      const lng = e.lngLat.lng;
-      const lat = e.lngLat.lat;
-      const match = findMatchingProperty(lng, lat);
-      if (match) {
-        selectProperty(match.id);
-      } else {
-        selectParcelResult(feature, lng, lat);
-      }
-      showSelectedParcelHighlight(feature.geometry);
-    });
+    // Interactions : chaque lot devient cliquable — enregistré UNE SEULE FOIS
+    // (même raison que pour les clusters, voir plus bas dans le fichier).
+    if (!window._gtParcelFillHandlersWired) {
+      window._gtParcelFillHandlersWired = true;
+      map.on("mouseenter", "gt-city-parcel-fill", () => { map.getCanvas().style.cursor = "pointer"; });
+      map.on("mouseleave", "gt-city-parcel-fill", () => { map.getCanvas().style.cursor = ""; });
+      map.on("click", "gt-city-parcel-fill", (e) => {
+        if (!e.features || !e.features[0]) return;
+        const feature = e.features[0];
+        const lng = e.lngLat.lng;
+        const lat = e.lngLat.lat;
+        const match = findMatchingProperty(lng, lat);
+        if (match) {
+          selectProperty(match.id);
+        } else {
+          selectParcelResult(feature, lng, lat);
+        }
+        showSelectedParcelHighlight(feature.geometry);
+      });
+    }
 
     return true;
   } catch (err) {
@@ -1461,34 +1457,40 @@ function setupClusterLayers() {
     }
   });
 
-  // Interactions
-  map.on("click", "clusters", e => {
-    const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
-    const clusterId = features[0].properties.cluster_id;
-    map.getSource("properties").getClusterExpansionZoom(clusterId, (err, zoom) => {
-      if (err) return;
-      map.easeTo({ center: features[0].geometry.coordinates, zoom, duration: 600 });
+  // Interactions — enregistrées UNE SEULE FOIS (jamais à chaque changement de
+  // style), sinon elles s'accumulent en double à chaque fois et un ancien
+  // gestionnaire cassé peut bloquer tous les clics suivants sur la carte.
+  if (!window._gtClusterHandlersWired) {
+    window._gtClusterHandlersWired = true;
+
+    map.on("click", "clusters", e => {
+      const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
+      const clusterId = features[0].properties.cluster_id;
+      map.getSource("properties").getClusterExpansionZoom(clusterId, (err, zoom) => {
+        if (err) return;
+        map.easeTo({ center: features[0].geometry.coordinates, zoom, duration: 600 });
+      });
     });
-  });
-  map.on("click", "unclustered-point", e => selectProperty(e.features[0].properties.id));
+    map.on("click", "unclustered-point", e => selectProperty(e.features[0].properties.id));
 
-  ["clusters", "unclustered-point"].forEach(layer => {
-    map.on("mouseenter", layer, () => { map.getCanvas().style.cursor = "pointer"; });
-    map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; });
-  });
+    ["clusters", "unclustered-point"].forEach(layer => {
+      map.on("mouseenter", layer, () => { map.getCanvas().style.cursor = "pointer"; });
+      map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; });
+    });
 
-  // Popup au survol d'un cluster
-  const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, offset: 12 });
-  map.on("mouseenter", "clusters", e => {
-    const f = e.features[0];
-    popup.setLngLat(f.geometry.coordinates)
-      .setHTML(`<div style="font-family:var(--font-sans);font-size:12px">
-        <strong>${f.properties.point_count} immeubles</strong><br/>
-        Total garanti : ${fmtK(f.properties.totalGuaranteed)}
-      </div>`)
-      .addTo(map);
-  });
-  map.on("mouseleave", "clusters", () => popup.remove());
+    // Popup au survol d'un cluster
+    const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, offset: 12 });
+    map.on("mouseenter", "clusters", e => {
+      const f = e.features[0];
+      popup.setLngLat(f.geometry.coordinates)
+        .setHTML(`<div style="font-family:var(--font-sans);font-size:12px">
+          <strong>${f.properties.point_count} immeubles</strong><br/>
+          Total garanti : ${fmtK(f.properties.totalGuaranteed)}
+        </div>`)
+        .addTo(map);
+    });
+    map.on("mouseleave", "clusters", () => popup.remove());
+  }
 }
 
 /* ---------- Refresh + comptage visible ---------- */

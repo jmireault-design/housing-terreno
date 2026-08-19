@@ -30,6 +30,18 @@ function populatePortfolioFilters() {
 // Chips "Ville" du filtre carte — générées à partir des vraies villes présentes dans
 // le portfolio, plutôt qu'une liste figée (Montréal/Laval/Longueuil ne suffit plus
 // une fois que le portfolio couvre bien plus de villes).
+// Cache la section entière d'un filtre (titre + chips) s'il n'y a aucune vraie
+// option à part "Tous" — pas la peine d'afficher un filtre inutile.
+function toggleFilterSectionVisibility(container, hasRealOptions) {
+  if (!container) return;
+  const title = container.previousElementSibling;
+  const display = hasRealOptions ? "" : "none";
+  container.style.display = display;
+  if (title && title.classList.contains("gt-filter-title")) {
+    title.style.display = display;
+  }
+}
+
 function populateMapCityChips(cities) {
   const container = document.getElementById("city-filter-chips");
   if (!container) return;
@@ -37,6 +49,7 @@ function populateMapCityChips(cities) {
 
   container.innerHTML = `<span class="gt-chip ${currentActive === "all" ? "active" : ""}" data-f="city" data-v="all">Toutes</span>` +
     cities.map(c => `<span class="gt-chip ${currentActive === c ? "active" : ""}" data-f="city" data-v="${c}">${c}</span>`).join("");
+  toggleFilterSectionVisibility(container, cities.length > 0);
 
   // Re-branche le clic sur ces chips (regénérées après le passage initial de wireUI())
   container.querySelectorAll(".gt-chip").forEach(c => {
@@ -56,10 +69,12 @@ function populateMapTypeChips() {
   const container = document.getElementById("type-filter-chips");
   if (!container) return;
   const currentActive = state.filters.type;
-  const types = CONFIG.options.propertyTypes;
+  const usedTypes = new Set(state.properties.map(p => p.type).filter(Boolean));
+  const types = CONFIG.options.propertyTypes.filter(t => usedTypes.has(t));
 
   container.innerHTML = `<span class="gt-chip ${currentActive === "all" ? "active" : ""}" data-f="type" data-v="all">Tous</span>` +
     types.map(t => `<span class="gt-chip ${currentActive === t ? "active" : ""}" data-f="type" data-v="${t}">${t}</span>`).join("");
+  toggleFilterSectionVisibility(container, types.length > 0);
 
   container.querySelectorAll(".gt-chip").forEach(c => {
     c.addEventListener("click", () => {
@@ -81,6 +96,7 @@ function populateGenericChips(containerId, filterKey, values) {
 
   container.innerHTML = `<span class="gt-chip ${currentActive === "all" ? "active" : ""}" data-f="${filterKey}" data-v="all">Tous</span>` +
     values.map(v => `<span class="gt-chip ${currentActive === v ? "active" : ""}" data-f="${filterKey}" data-v="${v}">${v}</span>`).join("");
+  toggleFilterSectionVisibility(container, values.length > 0);
 
   container.querySelectorAll(".gt-chip").forEach(c => {
     c.addEventListener("click", () => {
@@ -101,12 +117,18 @@ function populateMapLenderChips() {
 
 // Rang — depuis la même liste gérée que Paramètres/formulaires
 function populateMapRankChips() {
-  populateGenericChips("rank-filter-chips", "rank", CONFIG.options.ranks);
+  const usedRanks = new Set();
+  state.loans.forEach(l => (l.collateral || []).forEach(c => { if (c.rank) usedRanks.add(c.rank); }));
+  const ranks = CONFIG.options.ranks.filter(r => usedRanks.has(r));
+  populateGenericChips("rank-filter-chips", "rank", ranks);
 }
 
-// Type de prêt — depuis la même liste gérée que Paramètres/formulaires
+// Type de prêt — depuis la même liste gérée que Paramètres/formulaires, filtrée aux
+// valeurs réellement utilisées
 function populateMapLoanTypeChips() {
-  populateGenericChips("loantype-filter-chips", "loanType", CONFIG.options.loanTypes);
+  const usedTypes = new Set(state.loans.map(l => l.type).filter(Boolean));
+  const loanTypes = CONFIG.options.loanTypes.filter(t => usedTypes.has(t));
+  populateGenericChips("loantype-filter-chips", "loanType", loanTypes);
 }
 
 function applyTheme(theme) {
@@ -196,14 +218,6 @@ function wireUI() {
       const visible = toggleParcelLayers();
       parcelToggle.classList.toggle("active", visible);
       if (valueLegend) valueLegend.style.display = (visible && usesValueColors) ? "block" : "none";
-    });
-  }
-
-  // Mode "Épingle" : clic libre sur la carte pour un aperçu rapide
-  const pinToggle = document.getElementById("toggle-pin-mode");
-  if (pinToggle) {
-    pinToggle.addEventListener("click", () => {
-      if (typeof togglePinMode === "function") togglePinMode();
     });
   }
 

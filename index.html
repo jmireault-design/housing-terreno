@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Terreno — Suivi des prêts garantis</title>
 
-  <link href="https://api.mapbox.com/mapbox-gl-js/v3.8.0/mapbox-gl.css" rel="stylesheet" />
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.28.1/mapbox-gl.css" rel="stylesheet" />
   <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.3/mapbox-gl-geocoder.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.17.0/dist/tabler-icons.min.css" rel="stylesheet" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,7 +19,7 @@
 
 <div class="gt-app">
   <div class="gt-tabs">
-    <div class="gt-logo"><img src="assets/logo.svg" alt="Terreno" class="gt-logo-img" style="width:32px;height:32px;min-width:32px;max-width:32px;vertical-align:middle;margin-right:10px;display:inline-block;" />Terreno</div>
+    <div class="gt-logo"><img src="assets/logo.svg" alt="Terreno" class="gt-logo-img" style="width:32px;height:32px;min-width:32px;max-width:32px;vertical-align:middle;margin-right:10px;display:inline-block;" /><span>Terren<span style="color:var(--color-brand-blue, #2277B5);">o</span></span></div>
     <div class="gt-tab active" data-view="map"><i class="ti ti-map-pin"></i> Carte</div>
     <div class="gt-tab" data-view="portfolio"><i class="ti ti-list"></i> Portfolio</div>
     <div class="gt-tab" data-view="dash"><i class="ti ti-chart-bar"></i> Tableau de bord</div>
@@ -144,9 +144,6 @@
           <button data-style="streets">Rues</button>
           <button data-style="light">Épuré</button>
           <button data-style="satellite">Satellite</button>
-          <button id="toggle-pin-mode" title="Cliquer sur la carte pour un aperçu (adresse, Street View)">
-            <i class="ti ti-map-pin-plus"></i> Pin
-          </button>
         </div>
 
         <div class="gt-parcel-toggle" style="flex-direction:column; align-items:flex-start;">
@@ -157,6 +154,10 @@
             <button id="toggle-municipalities" class="active" title="Afficher / masquer les limites municipales">
               <i class="ti ti-map"></i> Municipalités
             </button>
+          </div>
+
+          <div style="font-size:11px; color:rgba(0,0,0,0.55); background:rgba(255,255,255,0.9); padding:3px 8px; border-radius:6px; display:flex; align-items:center; gap:4px;">
+            <i class="ti ti-mouse-2" style="font-size:13px;"></i> Clic droit sur la carte pour un aperçu rapide
           </div>
 
           <div class="gt-layers-dropdown">
@@ -295,7 +296,7 @@
   </div>
 </div>
 
-<script src="https://api.mapbox.com/mapbox-gl-js/v3.8.0/mapbox-gl.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.28.1/mapbox-gl.js"></script>
 <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.3/mapbox-gl-geocoder.min.js"></script>
 
 <script src="js/config.js"></script>

@@ -758,6 +758,10 @@ function attachPropertyEditHandlers(p) {
     renderPanel();
     refreshMap();
     if (typeof populatePortfolioFilters === "function") populatePortfolioFilters();
+    if (typeof populateMapTypeChips === "function") populateMapTypeChips();
+    if (typeof populateMapRankChips === "function") populateMapRankChips();
+    if (typeof populateMapLoanTypeChips === "function") populateMapLoanTypeChips();
+    if (typeof populateMapLenderChips === "function") populateMapLenderChips();
     if (typeof renderPortfolio === "function") renderPortfolio();
     if (typeof renderDashboard === "function") renderDashboard();
   };
@@ -960,6 +964,10 @@ function createNewProperty() {
   savePropertyOverride(property);
 
   if (typeof populatePortfolioFilters === "function") populatePortfolioFilters();
+    if (typeof populateMapTypeChips === "function") populateMapTypeChips();
+    if (typeof populateMapRankChips === "function") populateMapRankChips();
+    if (typeof populateMapLoanTypeChips === "function") populateMapLoanTypeChips();
+    if (typeof populateMapLenderChips === "function") populateMapLenderChips();
   if (typeof setupParcelLayer === "function") setupParcelLayer();
 
   if (typeof switchView === "function") switchView("map");
@@ -1395,6 +1403,10 @@ function attachSearchPanelHandlers(p) {
     }
 
     if (typeof populatePortfolioFilters === "function") populatePortfolioFilters();
+    if (typeof populateMapTypeChips === "function") populateMapTypeChips();
+    if (typeof populateMapRankChips === "function") populateMapRankChips();
+    if (typeof populateMapLoanTypeChips === "function") populateMapLoanTypeChips();
+    if (typeof populateMapLenderChips === "function") populateMapLenderChips();
     if (typeof setupParcelLayer === "function") setupParcelLayer();
     refreshMap();
     if (typeof renderPortfolio === "function") renderPortfolio();
@@ -1627,6 +1639,10 @@ function attachPropertyPanelHandlers(p) {
     closePanel();
     refreshMap();
     if (typeof populatePortfolioFilters === "function") populatePortfolioFilters();
+    if (typeof populateMapTypeChips === "function") populateMapTypeChips();
+    if (typeof populateMapRankChips === "function") populateMapRankChips();
+    if (typeof populateMapLoanTypeChips === "function") populateMapLoanTypeChips();
+    if (typeof populateMapLenderChips === "function") populateMapLenderChips();
     if (typeof renderPortfolio === "function") renderPortfolio();
     if (typeof renderDashboard === "function") renderDashboard();
   };

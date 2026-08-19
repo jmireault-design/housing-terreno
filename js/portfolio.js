@@ -210,6 +210,9 @@ function wireInlineEdits(container) {
       if (isNum) el.value = formatNumberWithCommas(val);
       if (typeof populatePortfolioFilters === "function") populatePortfolioFilters();
       if (typeof populateMapLenderChips === "function") populateMapLenderChips();
+      if (typeof populateMapTypeChips === "function") populateMapTypeChips();
+      if (typeof populateMapRankChips === "function") populateMapRankChips();
+      if (typeof populateMapLoanTypeChips === "function") populateMapLoanTypeChips();
       refreshMap();
       renderDashboard();
       if (loanId || !propertyId || el.closest("#portfolio-loans")) renderLoansList();
