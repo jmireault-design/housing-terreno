@@ -138,8 +138,20 @@ function wireLoanProfilePage(loan) {
   if (editBtn) {
     editBtn.onclick = () => {
       closeLoanProfilePage();
-      selectLoan(loan.id);
+      // On ne passe PAS par selectLoan() ici — elle ouvre maintenant cette page
+      // de profil, pas le panneau latéral. On reproduit directement ce qu'il
+      // faut pour ouvrir le formulaire d'édition dans le panneau latéral.
+      clearSearchHighlight();
+      clearSelectedParcelHighlight();
+      state.selectedType = "loan";
+      state.selectedId = loan.id;
+      state.searchResult = null;
+      if (typeof frameLoanCollateral === "function") frameLoanCollateral(loan.id);
       state.editing = true;
+      // Le formulaire d'édition vit dans le panneau de la vue Carte — si on est
+      // arrivé ici depuis Portfolio (ou une autre vue), il faut y basculer,
+      // sinon le formulaire se dessine correctement mais reste invisible.
+      if (typeof switchView === "function") switchView("map");
       renderPanel();
     };
   }

@@ -66,6 +66,10 @@ function renderLoansList() {
           <th>Type de prêt</th>
           <th>Rang</th>
           <th>Montant financé</th>
+          <th>Taux d'intérêt (%)</th>
+          <th>Taux après échéance (%)</th>
+          <th>Échéance (mois)</th>
+          <th>Nb mois min. intérêt</th>
           <th>Statut</th>
           <th>Apporteur d'affaires</th>
           <th>Adresse civique</th>
@@ -118,6 +122,18 @@ function renderLoansList() {
               <td>
                 ${c ? `<input class="gt-inline-edit gt-inline-edit-num" data-loan-id="${loan.id}" data-property-id="${p ? p.id : ""}" data-field="amount" value="${formatNumberWithCommas(amount)}" style="font-weight:500" />`
                     : `<input class="gt-inline-edit gt-inline-edit-num" data-loan-id="${loan.id}" data-field="principal" value="${formatNumberWithCommas(amount)}" style="font-weight:500" />`}
+              </td>
+              <td>
+                <input class="gt-inline-edit" data-loan-id="${loan.id}" data-field="rate" value="${loan.rate || ""}" style="width:60px" />
+              </td>
+              <td>
+                <input class="gt-inline-edit" data-loan-id="${loan.id}" data-field="rateAfterMaturity" value="${loan.rateAfterMaturity || ""}" placeholder="—" style="width:60px" />
+              </td>
+              <td>
+                <input class="gt-inline-edit" data-loan-id="${loan.id}" data-field="termMonths" value="${loan.termMonths || ""}" placeholder="—" style="width:55px" />
+              </td>
+              <td>
+                <input class="gt-inline-edit" data-loan-id="${loan.id}" data-field="minInterestMonths" value="${loan.minInterestMonths || ""}" placeholder="—" style="width:55px" />
               </td>
               <td>
                 <select class="gt-inline-edit gt-status-select" data-loan-id="${loan.id}" data-field="status" style="${statusSelectStyle(loan.status)}">
@@ -192,6 +208,9 @@ function wireInlineEdits(container) {
       } else if (loanId && field === "principal") {
         const loan = state.loanMap[loanId];
         if (loan) { loan.principal = val; saveLoanOverride(loan); }
+      } else if (loanId && ["rate", "rateAfterMaturity", "termMonths", "minInterestMonths"].includes(field)) {
+        const loan = state.loanMap[loanId];
+        if (loan) { loan[field] = Number(val) || (field === "rate" ? 0 : null); saveLoanOverride(loan); }
       } else if (propertyId && field === "propNotes") {
         const p = state.propertyMap[propertyId];
         if (p) { p.notes = val; savePropertyOverride(p); }

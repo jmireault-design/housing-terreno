@@ -7,9 +7,9 @@
     "type": "Mortgage-backed",
     "principal": 600000,
     "balance": 600000,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 6,
+    "startDate": "2024-08-01",
+    "maturity": "2024-11-01",
     "review": "",
     "status": "active",
     "risk": "Medium",
@@ -30,7 +30,10 @@
         "amount": 600000,
         "rank": "First rank"
       }
-    ]
+    ],
+    "termMonths": 3,
+    "minInterestMonths": 3,
+    "rateAfterMaturity": 18
   },
   {
     "id": "L002",
@@ -40,9 +43,9 @@
     "type": "Mortgage-backed",
     "principal": 250000,
     "balance": 250000,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 12,
+    "startDate": "2024-11-28",
+    "maturity": "2025-05-28",
     "review": "",
     "status": "active",
     "risk": "Medium",
@@ -63,7 +66,10 @@
         "amount": 250000,
         "rank": "First rank"
       }
-    ]
+    ],
+    "termMonths": 6,
+    "minInterestMonths": 3,
+    "rateAfterMaturity": 24
   },
   {
     "id": "L003",
@@ -73,9 +79,9 @@
     "type": "Mortgage-backed",
     "principal": 325000,
     "balance": 325000,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 3,
+    "startDate": "2025-07-15",
+    "maturity": "2025-10-15",
     "review": "",
     "status": "active",
     "risk": "Medium",
@@ -96,7 +102,10 @@
         "amount": 325000,
         "rank": "First rank"
       }
-    ]
+    ],
+    "termMonths": 3,
+    "minInterestMonths": 3,
+    "rateAfterMaturity": 18
   },
   {
     "id": "L004",
@@ -106,9 +115,9 @@
     "type": "Mortgage-backed",
     "principal": 400000,
     "balance": 0,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 12,
+    "startDate": "2025-06-04",
+    "maturity": "2025-11-28",
     "review": "",
     "status": "released",
     "risk": "Medium",
@@ -134,7 +143,10 @@
         "amount": 400000,
         "rank": "First rank"
       }
-    ]
+    ],
+    "termMonths": 6,
+    "minInterestMonths": 6,
+    "rateAfterMaturity": 18
   },
   {
     "id": "L005",
@@ -144,9 +156,9 @@
     "type": "Mortgage-backed",
     "principal": 779000,
     "balance": 779000,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 12,
+    "startDate": "2025-12-16",
+    "maturity": "2026-12-16",
     "review": "",
     "status": "active",
     "risk": "Medium",
@@ -172,7 +184,10 @@
         "amount": 779000,
         "rank": "Second rank"
       }
-    ]
+    ],
+    "termMonths": 12,
+    "minInterestMonths": 6,
+    "rateAfterMaturity": 18
   },
   {
     "id": "L006",
@@ -182,9 +197,9 @@
     "type": "Mortgage-backed",
     "principal": 325000,
     "balance": 325000,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 12,
+    "startDate": "2025-06-17",
+    "maturity": "2026-06-17",
     "review": "",
     "status": "active",
     "risk": "Medium",
@@ -215,7 +230,10 @@
         "amount": 325000,
         "rank": "First rank"
       }
-    ]
+    ],
+    "termMonths": 12,
+    "minInterestMonths": 6,
+    "rateAfterMaturity": 18
   },
   {
     "id": "L007",
@@ -225,9 +243,9 @@
     "type": "Mortgage-backed",
     "principal": 250000,
     "balance": 250000,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 12,
+    "startDate": "2025-04-01",
+    "maturity": "2026-04-01",
     "review": "",
     "status": "active",
     "risk": "Medium",
@@ -248,7 +266,10 @@
         "amount": 250000,
         "rank": "First rank"
       }
-    ]
+    ],
+    "termMonths": 12,
+    "minInterestMonths": 6,
+    "rateAfterMaturity": 18
   },
   {
     "id": "L008",
@@ -258,9 +279,9 @@
     "type": "Collateral",
     "principal": 100000,
     "balance": 100000,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 6,
+    "startDate": "2026-06-23",
+    "maturity": "2026-12-23",
     "review": "",
     "status": "active",
     "risk": "Medium",
@@ -281,7 +302,10 @@
         "amount": 100000,
         "rank": "Second rank"
       }
-    ]
+    ],
+    "termMonths": 6,
+    "minInterestMonths": 6,
+    "rateAfterMaturity": 24
   },
   {
     "id": "L009",
@@ -329,9 +353,9 @@
     "type": "Collateral",
     "principal": 300000,
     "balance": 300000,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 12,
+    "startDate": "2026-07-20",
+    "maturity": "2027-07-20",
     "review": "",
     "status": "active",
     "risk": "Medium",
@@ -357,7 +381,10 @@
         "amount": 300000,
         "rank": "First rank"
       }
-    ]
+    ],
+    "termMonths": 12,
+    "minInterestMonths": 6,
+    "rateAfterMaturity": 18
   },
   {
     "id": "L011",
@@ -367,9 +394,9 @@
     "type": "Mortgage-backed",
     "principal": 300000,
     "balance": 300000,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 12,
+    "startDate": "2026-06-29",
+    "maturity": "2027-06-29",
     "review": "",
     "status": "active",
     "risk": "Medium",
@@ -390,7 +417,10 @@
         "amount": 300000,
         "rank": "First rank"
       }
-    ]
+    ],
+    "termMonths": 12,
+    "minInterestMonths": 6,
+    "rateAfterMaturity": 18
   },
   {
     "id": "L012",
@@ -433,9 +463,9 @@
     "type": "Mortgage-backed",
     "principal": 289250,
     "balance": 289250,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 12,
+    "startDate": "2026-08-13",
+    "maturity": "2026-08-13",
     "review": "",
     "status": "pending",
     "risk": "Medium",
@@ -456,7 +486,10 @@
         "amount": 289250,
         "rank": "First rank"
       }
-    ]
+    ],
+    "termMonths": 6,
+    "minInterestMonths": 6,
+    "rateAfterMaturity": 18
   },
   {
     "id": "L014",
@@ -466,7 +499,7 @@
     "type": "Mortgage-backed",
     "principal": 0,
     "balance": 0,
-    "rate": 0,
+    "rate": 15,
     "startDate": "",
     "maturity": "",
     "review": "",
@@ -489,7 +522,8 @@
         "amount": 0,
         "rank": "Second rank"
       }
-    ]
+    ],
+    "rateAfterMaturity": 24
   },
   {
     "id": "L015",
@@ -499,9 +533,9 @@
     "type": "Mortgage-backed",
     "principal": 500000,
     "balance": 500000,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 12,
+    "startDate": "2026-04-01",
+    "maturity": "2027-04-01",
     "review": "",
     "status": "active",
     "risk": "Medium",
@@ -522,7 +556,10 @@
         "amount": 500000,
         "rank": "First rank"
       }
-    ]
+    ],
+    "termMonths": 12,
+    "minInterestMonths": 6,
+    "rateAfterMaturity": 18
   },
   {
     "id": "L016",
@@ -532,9 +569,9 @@
     "type": "Mortgage-backed",
     "principal": 331500,
     "balance": 331500,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 12,
+    "startDate": "2026-01-19",
+    "maturity": "2026-07-19",
     "review": "",
     "status": "active",
     "risk": "Medium",
@@ -555,7 +592,10 @@
         "amount": 331500,
         "rank": "First rank"
       }
-    ]
+    ],
+    "termMonths": 6,
+    "minInterestMonths": 6,
+    "rateAfterMaturity": 24
   },
   {
     "id": "L017",
@@ -565,9 +605,9 @@
     "type": "Mortgage-backed",
     "principal": 0,
     "balance": 0,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 12,
+    "startDate": "2025-10-30",
+    "maturity": "2026-01-30",
     "review": "",
     "status": "released",
     "risk": "Medium",
@@ -593,7 +633,10 @@
         "amount": 0,
         "rank": "Second rank"
       }
-    ]
+    ],
+    "termMonths": 3,
+    "minInterestMonths": 3,
+    "rateAfterMaturity": 24
   },
   {
     "id": "L018",
@@ -603,9 +646,9 @@
     "type": "Collateral",
     "principal": 200000,
     "balance": 200000,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 12,
+    "startDate": "2024-09-01",
+    "maturity": "2025-03-01",
     "review": "",
     "status": "active",
     "risk": "Medium",
@@ -626,7 +669,10 @@
         "amount": 200000,
         "rank": "Second rank"
       }
-    ]
+    ],
+    "termMonths": 6,
+    "minInterestMonths": 6,
+    "rateAfterMaturity": 24
   },
   {
     "id": "L019",
@@ -636,9 +682,9 @@
     "type": "Mortgage-backed",
     "principal": 300000,
     "balance": 300000,
-    "rate": 0,
-    "startDate": "",
-    "maturity": "",
+    "rate": 3,
+    "startDate": "2024-01-01",
+    "maturity": "2024-06-01",
     "review": "",
     "status": "active",
     "risk": "Medium",
@@ -659,6 +705,9 @@
         "amount": 300000,
         "rank": "First rank"
       }
-    ]
+    ],
+    "termMonths": 6,
+    "minInterestMonths": 6,
+    "rateAfterMaturity": 18
   }
 ]

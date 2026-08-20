@@ -1055,8 +1055,14 @@ function renderLoanEditForm(loan) {
       <label>Date de début
         <input id="edit-startDate" type="date" value="${loan.startDate || ""}" />
       </label>
+      <label>Échéance (en mois)
+        <input id="edit-termMonths" type="number" step="1" value="${loan.termMonths || ""}" placeholder="Ex. 12" />
+      </label>
       <label>Fin période minimum
         <input id="edit-minTermEndDate" type="date" value="${loan.minTermEndDate || ""}" />
+      </label>
+      <label>Nb de mois minimum d'intérêt
+        <input id="edit-minInterestMonths" type="number" step="1" value="${loan.minInterestMonths || ""}" placeholder="Ex. 6" />
       </label>
       <label>Échéance contractuelle
         <input id="edit-maturity" type="date" value="${loan.maturity || ""}" />
@@ -1076,6 +1082,9 @@ function renderLoanEditForm(loan) {
       </label>
       <label>Taux d'intérêt (%)
         <input id="edit-rate" type="number" step="0.01" value="${loan.rate || 0}" />
+      </label>
+      <label>Taux d'intérêt après l'échéance (%)
+        <input id="edit-rateAfterMaturity" type="number" step="0.01" value="${loan.rateAfterMaturity || ""}" placeholder="Ex. 18" />
       </label>
       <label>Frais de dossier (%)
         <input id="edit-dossierFeeRate" type="number" step="0.01" value="${loan.dossierFeeRate || 0}" />
@@ -1226,12 +1235,15 @@ function attachLoanEditHandlers(loan) {
     loan.status = document.getElementById("edit-status").value;
     loan.risk = document.getElementById("edit-risk").value;
     loan.startDate = document.getElementById("edit-startDate").value;
+    loan.termMonths = Number(document.getElementById("edit-termMonths").value) || null;
     loan.minTermEndDate = document.getElementById("edit-minTermEndDate").value;
+    loan.minInterestMonths = Number(document.getElementById("edit-minInterestMonths").value) || null;
     loan.maturity = document.getElementById("edit-maturity").value;
     loan.earlyEndDate = document.getElementById("edit-earlyEndDate").value;
     loan.principal = Number(document.getElementById("edit-principal").value) || 0;
     loan.balance = Number(document.getElementById("edit-balance").value) || 0;
     loan.rate = Number(document.getElementById("edit-rate").value) || 0;
+    loan.rateAfterMaturity = Number(document.getElementById("edit-rateAfterMaturity").value) || null;
     loan.dossierFeeRate = Number(document.getElementById("edit-dossierFeeRate").value) || 0;
     loan.referredBy = document.getElementById("edit-referredBy").value.trim();
     loan.collateral = editingCollateral.map(c => ({ ...c }));
