@@ -66,6 +66,8 @@ function renderLoansList() {
           <th>Type de prêt</th>
           <th>Rang</th>
           <th>Montant financé</th>
+          <th>Date de début</th>
+          <th>Échéance contractuelle</th>
           <th>Taux d'intérêt (%)</th>
           <th>Taux après échéance (%)</th>
           <th>Échéance (mois)</th>
@@ -122,6 +124,12 @@ function renderLoansList() {
               <td>
                 ${c ? `<input class="gt-inline-edit gt-inline-edit-num" data-loan-id="${loan.id}" data-property-id="${p ? p.id : ""}" data-field="amount" value="${formatNumberWithCommas(amount)}" style="font-weight:500" />`
                     : `<input class="gt-inline-edit gt-inline-edit-num" data-loan-id="${loan.id}" data-field="principal" value="${formatNumberWithCommas(amount)}" style="font-weight:500" />`}
+              </td>
+              <td>
+                <input class="gt-inline-edit" type="date" data-loan-id="${loan.id}" data-field="startDate" value="${loan.startDate || ""}" style="width:130px" />
+              </td>
+              <td>
+                <input class="gt-inline-edit" type="date" data-loan-id="${loan.id}" data-field="maturity" value="${loan.maturity || ""}" style="width:130px" />
               </td>
               <td>
                 <input class="gt-inline-edit" data-loan-id="${loan.id}" data-field="rate" value="${loan.rate || ""}" style="width:60px" />
@@ -211,6 +219,9 @@ function wireInlineEdits(container) {
       } else if (loanId && ["rate", "rateAfterMaturity", "termMonths", "minInterestMonths"].includes(field)) {
         const loan = state.loanMap[loanId];
         if (loan) { loan[field] = Number(val) || (field === "rate" ? 0 : null); saveLoanOverride(loan); }
+      } else if (loanId && ["startDate", "maturity"].includes(field)) {
+        const loan = state.loanMap[loanId];
+        if (loan) { loan[field] = val; saveLoanOverride(loan); }
       } else if (propertyId && field === "propNotes") {
         const p = state.propertyMap[propertyId];
         if (p) { p.notes = val; savePropertyOverride(p); }

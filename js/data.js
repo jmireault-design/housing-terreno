@@ -182,7 +182,7 @@ async function loadData() {
     // Applique les modifications sauvegardées localement (localStorage) par-dessus loans.json / properties.json
     const loanOverrides = loadLoanOverrides();
     if (Object.keys(loanOverrides).length > 0) {
-      state.loans = state.loans.map(l => loanOverrides[l.id] || l);
+      state.loans = state.loans.map(l => loanOverrides[l.id] ? { ...l, ...loanOverrides[l.id] } : l);
     }
 
     // Immeubles : d'abord appliquer les modifications sur les entrées existantes,
@@ -191,7 +191,7 @@ async function loadData() {
     const propertyOverrides = loadPropertyOverrides();
     const existingIds = new Set(state.properties.map(p => p.id));
     if (Object.keys(propertyOverrides).length > 0) {
-      state.properties = state.properties.map(p => propertyOverrides[p.id] || p);
+      state.properties = state.properties.map(p => propertyOverrides[p.id] ? { ...p, ...propertyOverrides[p.id] } : p);
       Object.values(propertyOverrides).forEach(p => {
         if (!existingIds.has(p.id)) state.properties.push(p);
       });
