@@ -1299,3 +1299,181 @@ body.dark-theme .gt-layers-dropdown-item:hover {
 .gt-legends-stack .gt-flood-legend {
   position: static;
 }
+
+/* =====================================================================
+   Page de profil d'un prêt — plein écran, pas juste le panneau latéral
+   ===================================================================== */
+.gt-loan-profile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--color-bg-primary, #FFFFFF);
+  overflow-y: auto;
+}
+.gt-loan-profile-overlay.open {
+  display: block;
+}
+
+.gt-lp-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--color-border, #ECEAE3);
+  padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.gt-lp-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border, #ddd);
+  background: #FFFFFF;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+.gt-lp-back-btn:hover {
+  background: var(--color-border, #f0f0f0);
+}
+.gt-lp-title-block h1 {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0;
+}
+.gt-lp-title-block .gt-lp-subtitle {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+.gt-lp-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.gt-lp-body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 32px 64px;
+}
+
+.gt-lp-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.gt-lp-stat-card {
+  background: var(--color-bg-secondary, #F5F4F0);
+  border-radius: var(--radius-lg, 14px);
+  padding: 16px 18px;
+}
+.gt-lp-stat-card .gt-lp-stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-tertiary);
+  margin-bottom: 6px;
+}
+.gt-lp-stat-card .gt-lp-stat-value {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.gt-lp-section-title {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0 0 16px;
+  padding-top: 8px;
+}
+
+.gt-lp-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 36px;
+}
+.gt-lp-info-item .gt-lp-info-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-tertiary);
+  margin-bottom: 4px;
+}
+.gt-lp-info-item .gt-lp-info-value {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.gt-lp-collateral-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-bottom: 36px;
+}
+.gt-lp-collateral-card {
+  border: 1px solid var(--color-border, #ECEAE3);
+  border-radius: var(--radius-lg, 14px);
+  overflow: hidden;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.gt-lp-collateral-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+.gt-lp-collateral-card .gt-sv-wrap {
+  height: 170px;
+  border-radius: 0;
+}
+.gt-lp-collateral-body {
+  padding: 14px 16px;
+}
+.gt-lp-collateral-addr {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+.gt-lp-collateral-meta {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  margin-bottom: 10px;
+}
+.gt-lp-collateral-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  border-top: 1px solid var(--color-border, #ECEAE3);
+  padding-top: 10px;
+}
+.gt-lp-collateral-stats strong {
+  display: block;
+  font-size: 14px;
+}
+
+.gt-lp-notes-box {
+  background: var(--color-bg-secondary, #F5F4F0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px 18px;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+body.dark-theme .gt-loan-profile-overlay { background: var(--color-bg-primary, #12141A); }
+body.dark-theme .gt-lp-header { background: #171A21; border-bottom-color: #2A2F3A; }
+body.dark-theme .gt-lp-back-btn { background: #1F232C; border-color: #2A2F3A; color: var(--color-text-primary); }
+body.dark-theme .gt-lp-stat-card,
+body.dark-theme .gt-lp-notes-box { background: #1F232C; }
+body.dark-theme .gt-lp-collateral-card { background: #171A21; border-color: #2A2F3A; }
+body.dark-theme .gt-lp-collateral-stats { border-top-color: #2A2F3A; }

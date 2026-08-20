@@ -236,6 +236,54 @@ function wireUI() {
     });
   }
 
+  // Menu déroulant "Transport"
+  const transportDropdownToggle = document.getElementById("transport-dropdown-toggle");
+  const transportDropdownMenu = document.getElementById("transport-dropdown-menu");
+  if (transportDropdownToggle && transportDropdownMenu) {
+    transportDropdownToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      transportDropdownMenu.classList.toggle("open");
+    });
+    document.addEventListener("click", (e) => {
+      if (!transportDropdownMenu.contains(e.target) && e.target !== transportDropdownToggle) {
+        transportDropdownMenu.classList.remove("open");
+      }
+    });
+  }
+
+  // Afficher / masquer le métro STM
+  const metroToggle = document.getElementById("toggle-metro");
+  if (metroToggle) {
+    metroToggle.addEventListener("change", () => {
+      if (!map) return;
+      ["gt-metro-line", "gt-metro-label", "gt-metro-stations-points", "gt-metro-stations-label"].forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", metroToggle.checked ? "visible" : "none");
+      });
+    });
+  }
+
+  // Afficher / masquer les trains de banlieue exo
+  const trainToggle = document.getElementById("toggle-train");
+  if (trainToggle) {
+    trainToggle.addEventListener("change", () => {
+      if (!map) return;
+      ["gt-train-line", "gt-train-label"].forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", trainToggle.checked ? "visible" : "none");
+      });
+    });
+  }
+
+  // Afficher / masquer les arrêts d'autobus STM
+  const busStopsToggle = document.getElementById("toggle-bus-stops");
+  if (busStopsToggle) {
+    busStopsToggle.addEventListener("change", () => {
+      if (!map) return;
+      ["gt-bus-stops-points", "gt-bus-stops-label"].forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", busStopsToggle.checked ? "visible" : "none");
+      });
+    });
+  }
+
   // Afficher / masquer les limites municipales
   const muniToggle = document.getElementById("toggle-municipalities");
   if (muniToggle) {

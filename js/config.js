@@ -77,6 +77,28 @@ const CONFIG = {
     sourceLayer: "coastal_erosion"
   },
 
+  // Lignes de métro STM et trains de banlieue exo, généré via download_transit_routes.py + tippecanoe.
+  metroTileset: {
+    id: "jmireault.9xbiig",
+    sourceLayer: "metro_stm"
+  },
+  trainTileset: {
+    id: "jmireault.e64m3w",
+    sourceLayer: "trains_exo"
+  },
+
+  // Arrêts d'autobus STM, généré via download_bus_stops.py + tippecanoe.
+  busStopsTileset: {
+    id: "jmireault.waa9op",
+    sourceLayer: "bus_stops_stm"
+  },
+
+  // Stations de métro STM, généré via download_metro_stations.py + tippecanoe.
+  metroStationsTileset: {
+    id: "jmireault.4lcpv0",
+    sourceLayer: "metro_stations_stm"
+  },
+
   // Tileset de points matricule (mat18 + code_mun), généré via extract_matricule_points.sh
   // + tippecanoe. Permet de retrouver le matricule d'un lot au clic, peu importe la ville.
   // Laisser id vide si non configuré.

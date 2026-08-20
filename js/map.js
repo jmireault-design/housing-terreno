@@ -85,6 +85,9 @@ function initMap() {
     setupContaminatedSitesLayer();
     setupAgriculturalZoneLayer();
     setupCoastalErosionLayer();
+    setupMetroLayer();
+    setupTrainLayer();
+    setupBusStopsLayer();
     setupClusterLayers();
     syncRiskLayerVisibilityFromCheckboxes();
     refreshMap();
@@ -433,6 +436,305 @@ async function fetchCoastalErosionStatus(lng, lat) {
   const props = await tilequeryLookup(CONFIG.coastalErosionTileset.id, lng, lat);
   if (!props) return null;
   return { mrc: props.mrc_nom || "", zoneType: props.zone_type || "" };
+}
+
+/* ---------- Métro STM ---------- */
+function setupMetroLayer() {
+  if (!CONFIG.metroTileset || !CONFIG.metroTileset.id) return;
+  if (map.getLayer("gt-metro-line")) return;
+
+  map.addSource("gt-metro", {
+    type: "vector",
+    url: `mapbox://${CONFIG.metroTileset.id}`
+  });
+
+  const beforeId = typeof getFirstLabelLayerId === "function" ? getFirstLabelLayerId() : undefined;
+
+  map.addLayer({
+    id: "gt-metro-line",
+    type: "line",
+    source: "gt-metro",
+    "source-layer": CONFIG.metroTileset.sourceLayer,
+    minzoom: 9,
+    layout: { "line-cap": "round", "line-join": "round" },
+    paint: {
+      "line-color": ["concat", "#", ["get", "route_color"]],
+      "line-width": ["interpolate", ["linear"], ["zoom"], 9, 2, 16, 5]
+    }
+  }, beforeId);
+
+  map.addLayer({
+    id: "gt-metro-label",
+    type: "symbol",
+    source: "gt-metro",
+    "source-layer": CONFIG.metroTileset.sourceLayer,
+    minzoom: 11,
+    layout: {
+      "symbol-placement": "line",
+      "text-field": ["get", "route_long_name"],
+      "text-size": 11,
+      "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+    },
+    paint: {
+      "text-color": ["concat", "#", ["get", "route_color"]],
+      "text-halo-color": "#FFFFFF",
+      "text-halo-width": 1.5
+    }
+  }, beforeId);
+
+  setupMetroStationsLayer(beforeId);
+}
+
+// Stations de métro — icône ronde "M" (façon logo classique de métro), liée à la
+// même case "Métro" que les lignes (pas de case séparée).
+function setupMetroStationsLayer(beforeId) {
+  if (!CONFIG.metroStationsTileset || !CONFIG.metroStationsTileset.id) return;
+  if (map.getLayer("gt-metro-stations-points")) return;
+
+  map.addSource("gt-metro-stations", {
+    type: "vector",
+    url: `mapbox://${CONFIG.metroStationsTileset.id}`
+  });
+
+  const METRO_COLOR = "#1A1A2E";
+  const metroBtn = document.getElementById("toggle-metro");
+  const initialVisibility = (metroBtn && metroBtn.checked) ? "visible" : "none";
+
+  const addStationLayers = () => {
+    map.addLayer({
+      id: "gt-metro-stations-points",
+      type: "symbol",
+      source: "gt-metro-stations",
+      "source-layer": CONFIG.metroStationsTileset.sourceLayer,
+      minzoom: 8,
+      layout: {
+        "icon-image": "gt-metro-icon",
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 8, 0.12, 12, 0.22, 17, 0.4],
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "visibility": initialVisibility
+      }
+    }, beforeId);
+
+    map.addLayer({
+      id: "gt-metro-stations-label",
+      type: "symbol",
+      source: "gt-metro-stations",
+      "source-layer": CONFIG.metroStationsTileset.sourceLayer,
+      minzoom: 12,
+      layout: {
+        "text-field": ["get", "stop_name"],
+        "text-size": 10,
+        "text-offset": [0, 1.4],
+        "text-anchor": "top",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "visibility": initialVisibility
+      },
+      paint: {
+        "text-color": METRO_COLOR,
+        "text-halo-color": "#FFFFFF",
+        "text-halo-width": 1.5
+      }
+    }, beforeId);
+  };
+
+  if (map.hasImage("gt-metro-icon")) {
+    addStationLayers();
+    return;
+  }
+
+  const size = 64;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+
+  ctx.beginPath();
+  ctx.arc(size / 2, size / 2, size / 2 - 3, 0, Math.PI * 2);
+  ctx.fillStyle = METRO_COLOR;
+  ctx.fill();
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = "#FFFFFF";
+  ctx.stroke();
+
+  // Icône "subway" fournie (tracé SVG original, viewBox 256x256), redimensionnée et
+  // centrée dans le rond, dessinée en blanc.
+  const subwayPath = new Path2D("M224,96V208a8,8,0,0,1-16,0V96a56.06,56.06,0,0,0-56-56H104A56.06,56.06,0,0,0,48,96V208a8,8,0,0,1-16,0V96a72.08,72.08,0,0,1,72-72h48A72.08,72.08,0,0,1,224,96Zm-40,0v72a24,24,0,0,1-19.29,23.53l2.45,4.89a8,8,0,0,1-14.32,7.16L147.06,192H108.94l-5.78,11.58a8,8,0,0,1-14.32-7.16l2.45-4.89A24,24,0,0,1,72,168V96A24,24,0,0,1,96,72h64A24,24,0,0,1,184,96ZM88,96v48h80V96a8,8,0,0,0-8-8H96A8,8,0,0,0,88,96Zm32,64v16h16V160ZM96,176h8V160H88v8A8,8,0,0,0,96,176Zm72-8v-8H152v16h8A8,8,0,0,0,168,168Z");
+  const iconTargetSize = size * 0.56; // occupe ~56% du diamètre du rond
+  const scale = iconTargetSize / 256;
+  const offset = (size - iconTargetSize) / 2;
+
+  ctx.save();
+  ctx.translate(offset, offset);
+  ctx.scale(scale, scale);
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fill(subwayPath);
+  ctx.restore();
+
+  const imageData = ctx.getImageData(0, 0, size, size);
+  map.addImage("gt-metro-icon", imageData);
+  addStationLayers();
+}
+
+/* ---------- Trains de banlieue exo ---------- */
+function setupTrainLayer() {
+  if (!CONFIG.trainTileset || !CONFIG.trainTileset.id) return;
+  if (map.getLayer("gt-train-line")) return;
+
+  map.addSource("gt-train", {
+    type: "vector",
+    url: `mapbox://${CONFIG.trainTileset.id}`
+  });
+
+  const beforeId = typeof getFirstLabelLayerId === "function" ? getFirstLabelLayerId() : undefined;
+
+  map.addLayer({
+    id: "gt-train-line",
+    type: "line",
+    source: "gt-train",
+    "source-layer": CONFIG.trainTileset.sourceLayer,
+    minzoom: 7,
+    layout: { "line-cap": "round", "line-join": "round" },
+    paint: {
+      "line-color": ["concat", "#", ["get", "route_color"]],
+      "line-width": ["interpolate", ["linear"], ["zoom"], 7, 1.5, 14, 4],
+      "line-dasharray": [2, 1.5]
+    }
+  }, beforeId);
+
+  map.addLayer({
+    id: "gt-train-label",
+    type: "symbol",
+    source: "gt-train",
+    "source-layer": CONFIG.trainTileset.sourceLayer,
+    minzoom: 9,
+    layout: {
+      "symbol-placement": "line",
+      "text-field": ["get", "route_long_name"],
+      "text-size": 11,
+      "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+    },
+    paint: {
+      "text-color": ["concat", "#", ["get", "route_color"]],
+      "text-halo-color": "#FFFFFF",
+      "text-halo-width": 1.5
+    }
+  }, beforeId);
+}
+
+/* ---------- Arrêts d'autobus STM ---------- */
+function setupBusStopsLayer() {
+  if (!CONFIG.busStopsTileset || !CONFIG.busStopsTileset.id) return;
+  if (map.getLayer("gt-bus-stops-points")) return;
+
+  map.addSource("gt-bus-stops", {
+    type: "vector",
+    url: `mapbox://${CONFIG.busStopsTileset.id}`
+  });
+
+  const beforeIdBus = typeof getFirstLabelLayerId === "function" ? getFirstLabelLayerId() : undefined;
+  const BUS_COLOR = "#E8601C"; // orange bien visible, distinct des autres couches
+
+  const addBusLayers = () => {
+    // Comme le chargement de la police est asynchrone, ces couches peuvent apparaître
+    // bien après la vérification initiale des cases à cocher — on fixe donc leur
+    // visibilité directement ici, selon l'état actuel de la case, plutôt que de
+    // compter sur un contrôle externe qui pourrait s'exécuter trop tôt.
+    const busBtn = document.getElementById("toggle-bus-stops");
+    const initialVisibility = (busBtn && busBtn.checked) ? "visible" : "none";
+
+    map.addLayer({
+      id: "gt-bus-stops-points",
+      type: "symbol",
+      source: "gt-bus-stops",
+      "source-layer": CONFIG.busStopsTileset.sourceLayer,
+      minzoom: 13,
+      layout: {
+        "icon-image": "gt-bus-icon",
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 13, 0.3, 17, 0.55],
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "visibility": initialVisibility
+      }
+    }, beforeIdBus);
+
+    map.addLayer({
+      id: "gt-bus-stops-label",
+      type: "symbol",
+      source: "gt-bus-stops",
+      "source-layer": CONFIG.busStopsTileset.sourceLayer,
+      minzoom: 16,
+      layout: {
+        "text-field": ["get", "stop_name"],
+        "text-size": 10,
+        "text-offset": [0, 1.4],
+        "text-anchor": "top",
+        "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
+        "visibility": initialVisibility
+      },
+      paint: {
+        "text-color": BUS_COLOR,
+        "text-halo-color": "#FFFFFF",
+        "text-halo-width": 1.5
+      }
+    }, beforeIdBus);
+  };
+
+  if (map.hasImage("gt-bus-icon")) {
+    addBusLayers();
+    return;
+  }
+
+  // Dessine la vraie icône "Bus" de Phosphor Icons (phosphoricons.com) dans un rond
+  // orange, en chargeant leur police officielle et en dessinant le glyphe exact
+  // (codepoint 57606, poids "bold") sur un canvas — plutôt qu'une silhouette
+  // approximative, c'est le vrai tracé de leur bibliothèque.
+  const drawBusIcon = () => {
+    const size = 80;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, size / 2 - 3, 0, Math.PI * 2);
+    ctx.fillStyle = BUS_COLOR;
+    ctx.fill();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.stroke();
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = `${Math.round(size * 0.52)}px "Phosphor-Bold"`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String.fromCodePoint(57606), size / 2, size / 2 + 2);
+
+    const imageData = ctx.getImageData(0, 0, size, size);
+    if (!map.hasImage("gt-bus-icon")) map.addImage("gt-bus-icon", imageData);
+    addBusLayers();
+  };
+
+  if (!document.getElementById("gt-phosphor-font-link")) {
+    const link = document.createElement("link");
+    link.id = "gt-phosphor-font-link";
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css";
+    document.head.appendChild(link);
+  }
+
+  const fontFace = new FontFace(
+    "Phosphor-Bold",
+    "url(https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/Phosphor-Bold.woff)"
+  );
+  fontFace.load().then(loaded => {
+    document.fonts.add(loaded);
+    drawBusIcon();
+  }).catch(() => {
+    // Si la police échoue à charger pour une raison ou une autre, on retombe sur un
+    // simple rond orange plutôt que de ne rien afficher du tout.
+    drawBusIcon();
+  });
 }
 
 /* ---------- Surlignage du lot sélectionné (le polygone entier, pas un point) ---------- */
@@ -1623,7 +1925,11 @@ function selectLoan(id) {
   state.editing = false;
   state.searchResult = null;
   frameLoanCollateral(id);
-  renderPanel();
+  if (typeof openLoanProfilePage === "function") {
+    openLoanProfilePage(id);
+  } else {
+    renderPanel();
+  }
 }
 
 /* ---------- Cadrer les immeubles d'un prêt ---------- */
@@ -1708,6 +2014,27 @@ function syncRiskLayerVisibilityFromCheckboxes() {
       if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
     });
   }
+
+  const metroBtn = document.getElementById("toggle-metro");
+  if (metroBtn && !metroBtn.checked) {
+    ["gt-metro-line", "gt-metro-label", "gt-metro-stations-points", "gt-metro-stations-label"].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+    });
+  }
+
+  const trainBtn = document.getElementById("toggle-train");
+  if (trainBtn && !trainBtn.checked) {
+    ["gt-train-line", "gt-train-label"].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+    });
+  }
+
+  const busBtn = document.getElementById("toggle-bus-stops");
+  if (busBtn && !busBtn.checked) {
+    ["gt-bus-stops-points", "gt-bus-stops-label"].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+    });
+  }
 }
 
 /* ---------- Changement de style ---------- */
@@ -1721,6 +2048,9 @@ function setMapStyle(styleKey) {
     setupContaminatedSitesLayer();
     setupAgriculturalZoneLayer();
     setupCoastalErosionLayer();
+    setupMetroLayer();
+    setupTrainLayer();
+    setupBusStopsLayer();
     syncRiskLayerVisibilityFromCheckboxes();
 
     // Les lots (cadastre) ne se rattachent que si le bouton "Lots" est actif

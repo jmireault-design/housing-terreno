@@ -156,10 +156,6 @@
             </button>
           </div>
 
-          <div style="font-size:11px; color:rgba(0,0,0,0.55); background:rgba(255,255,255,0.9); padding:3px 8px; border-radius:6px; display:flex; align-items:center; gap:4px;">
-            <i class="ti ti-mouse-2" style="font-size:13px;"></i> Clic droit sur la carte pour un aperçu rapide
-          </div>
-
           <div class="gt-layers-dropdown">
             <button id="layers-dropdown-toggle" title="Risques">
               <i class="ti ti-layers-intersect"></i> Risques <i class="ti ti-chevron-down"></i>
@@ -184,6 +180,26 @@
               <label class="gt-layers-dropdown-item">
                 <input type="checkbox" id="toggle-agricultural-zone">
                 <i class="ti ti-tractor"></i> Zone agricole (CPTAQ)
+              </label>
+            </div>
+          </div>
+
+          <div class="gt-layers-dropdown">
+            <button id="transport-dropdown-toggle" title="Transport">
+              <i class="ti ti-train"></i> Transport <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="gt-layers-dropdown-menu" id="transport-dropdown-menu">
+              <label class="gt-layers-dropdown-item">
+                <input type="checkbox" id="toggle-metro">
+                <i class="ti ti-train"></i> Métro (STM)
+              </label>
+              <label class="gt-layers-dropdown-item">
+                <input type="checkbox" id="toggle-train">
+                <i class="ti ti-train"></i> Trains de banlieue (exo)
+              </label>
+              <label class="gt-layers-dropdown-item">
+                <input type="checkbox" id="toggle-bus-stops">
+                <i class="ti ti-bus"></i> Arrêts d'autobus (STM)
               </label>
             </div>
           </div>
@@ -296,6 +312,11 @@
   </div>
 </div>
 
+<!-- PAGE DE PROFIL D'UN PRÊT (plein écran, pas juste le panneau latéral) -->
+<div class="gt-loan-profile-overlay" id="loan-profile-overlay">
+  <div id="loan-profile-content"></div>
+</div>
+
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.28.1/mapbox-gl.js"></script>
 <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.3/mapbox-gl-geocoder.min.js"></script>
 
@@ -309,6 +330,7 @@
 <script src="js/dashboard.js"></script>
 <script src="js/rates.js"></script>
 <script src="js/settings.js"></script>
+<script src="js/loan-profile.js"></script>
 <script src="js/app.js"></script>
 
 </body>
