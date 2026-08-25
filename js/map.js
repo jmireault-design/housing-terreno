@@ -6,6 +6,7 @@ let map;
 let geocoder;
 let collateralHighlightMarkers = [];
 let searchHighlightMarker = null;
+let parcelDimensionMarkers = [];
 
 function initMap() {
   mapboxgl.accessToken = CONFIG.mapboxToken;
@@ -17,6 +18,7 @@ function initMap() {
     zoom: CONFIG.map.zoom
   });
   map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+  map.on("zoom", updateParcelDimensionLabelsVisibility);
 
   geocoder = new MapboxGeocoder({
     accessToken: CONFIG.mapboxToken,
@@ -85,6 +87,8 @@ function initMap() {
     setupContaminatedSitesLayer();
     setupAgriculturalZoneLayer();
     setupCoastalErosionLayer();
+    setupWildfireRegimeLayer();
+    setupFireRestrictionLayer();
     setupMetroLayer();
     setupTrainLayer();
     setupBusStopsLayer();
@@ -437,6 +441,144 @@ async function fetchCoastalErosionStatus(lng, lat) {
   const props = await tilequeryLookup(CONFIG.coastalErosionTileset.id, lng, lat);
   if (!props) return null;
   return { mrc: props.mrc_nom || "", zoneType: props.zone_type || "" };
+}
+
+/* ---------- Zonage des régimes de feux du Québec méridional (MRNF) ---------- */
+function setupWildfireRegimeLayer() {
+  if (!CONFIG.wildfireRegimeTileset || !CONFIG.wildfireRegimeTileset.id) return;
+  if (map.getLayer("gt-wildfire-regime-fill")) return;
+
+  map.addSource("gt-wildfire-regime", {
+    type: "vector",
+    url: `mapbox://${CONFIG.wildfireRegimeTileset.id}`
+  });
+
+  map.addLayer({
+    id: "gt-wildfire-regime-fill",
+    type: "fill",
+    source: "gt-wildfire-regime",
+    "source-layer": CONFIG.wildfireRegimeTileset.sourceLayer,
+    minzoom: 4,
+    paint: {
+      "fill-color": "#D97706",
+      "fill-opacity": 0.18
+    }
+  }, getFirstLabelLayerId());
+
+  map.addLayer({
+    id: "gt-wildfire-regime-outline",
+    type: "line",
+    source: "gt-wildfire-regime",
+    "source-layer": CONFIG.wildfireRegimeTileset.sourceLayer,
+    minzoom: 4,
+    paint: {
+      "line-color": "#B45309",
+      "line-width": 1,
+      "line-dasharray": [2, 1]
+    }
+  }, getFirstLabelLayerId());
+}
+
+async function fetchWildfireRegimeStatus(lng, lat) {
+  if (!CONFIG.wildfireRegimeTileset || !CONFIG.wildfireRegimeTileset.id) return null;
+  const props = await tilequeryLookup(CONFIG.wildfireRegimeTileset.id, lng, lat);
+  if (!props) return null;
+  return { zone: props.zone_nom || props.ZONE || "", regime: props.regime || props.REGIME || "" };
+}
+
+/* ---------- Mesures préventives feux de forêt actives (IFCO/ICAF/RTF — SOPFEU/MSP) ----------
+   Contrairement aux autres couches de risque, ces zones bougent en cours de saison :
+   pas de tileset Mapbox ici, on les charge en direct depuis l'API WFS publique du
+   gouvernement à chaque ouverture de la carte. */
+let fireRestrictionRefreshTimer = null;
+
+async function setupFireRestrictionLayer() {
+  if (!CONFIG.fireRestrictionSources) return;
+  if (!map.getSource("gt-fire-restrictions")) {
+    map.addSource("gt-fire-restrictions", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] }
+    });
+
+    const restrictionColorMatch = [
+      "match", ["get", "mesure"],
+      "IFCO", "#DC2626",
+      "ICAF", "#EA580C",
+      "RTF", "#D97706",
+      "#B45309"
+    ];
+
+    map.addLayer({
+      id: "gt-fire-restriction-fill",
+      type: "fill",
+      source: "gt-fire-restrictions",
+      minzoom: 4,
+      paint: {
+        "fill-color": restrictionColorMatch,
+        "fill-opacity": 0.22
+      }
+    }, getFirstLabelLayerId());
+
+    map.addLayer({
+      id: "gt-fire-restriction-outline",
+      type: "line",
+      source: "gt-fire-restrictions",
+      minzoom: 4,
+      paint: {
+        "line-color": restrictionColorMatch,
+        "line-width": 1.5
+      }
+    }, getFirstLabelLayerId());
+  }
+
+  await refreshFireRestrictionData();
+
+  // Rafraîchit automatiquement toutes les 30 minutes tant que la page reste ouverte
+  // (ces zones peuvent changer en pleine journée lors d'alertes SOPFEU).
+  if (!fireRestrictionRefreshTimer) {
+    fireRestrictionRefreshTimer = setInterval(refreshFireRestrictionData, 30 * 60 * 1000);
+  }
+}
+
+async function refreshFireRestrictionData() {
+  if (!map.getSource("gt-fire-restrictions")) return;
+  const sources = CONFIG.fireRestrictionSources;
+  const labels = { ifco: "IFCO", icaf: "ICAF", rtf: "RTF" };
+
+  try {
+    const results = await Promise.all(
+      Object.entries(sources).map(([key, url]) =>
+        fetch(url).then(r => (r.ok ? r.json() : null)).catch(() => null)
+      )
+    );
+
+    const features = [];
+    Object.keys(sources).forEach((key, i) => {
+      const fc = results[i];
+      if (!fc || !fc.features) return;
+      fc.features.forEach(f => {
+        features.push({
+          ...f,
+          properties: { ...f.properties, mesure: labels[key] }
+        });
+      });
+    });
+
+    map.getSource("gt-fire-restrictions").setData({ type: "FeatureCollection", features });
+    console.log(`Terreno: ${features.length} zone(s) de mesures préventives feux de forêt chargée(s).`);
+  } catch (e) {
+    console.warn("Terreno: impossible de charger les mesures préventives feux de forêt.", e);
+  }
+}
+
+// Un point (immeuble) est-il actuellement dans une zone de mesure active ? Vérifie
+// contre les données déjà chargées dans la source (pas de requête réseau séparée).
+function fireRestrictionStatusAt(lng, lat) {
+  if (!map.getSource("gt-fire-restrictions") || !map.getLayer("gt-fire-restriction-fill")) return null;
+  const point = map.project([lng, lat]);
+  const found = map.queryRenderedFeatures(point, { layers: ["gt-fire-restriction-fill"] });
+  if (!found.length) return null;
+  return [...new Set(found.map(f => f.properties.mesure))];
 }
 
 /* ---------- Métro STM ---------- */
@@ -820,11 +962,93 @@ function showSelectedParcelHighlight(geometry) {
     type: "FeatureCollection",
     features: [{ type: "Feature", geometry, properties: {} }]
   });
+  showParcelDimensionLabels(geometry);
 }
 
 function clearSelectedParcelHighlight() {
   if (!map.getSource("gt-selected-parcel")) return;
   map.getSource("gt-selected-parcel").setData({ type: "FeatureCollection", features: [] });
+  clearParcelDimensionLabels();
+}
+
+/* ---------- Labels de dimensions (longueur de chaque côté) du lot sélectionné ---------- */
+
+// Distance en mètres entre deux points [lng, lat] (formule haversine — pas besoin de turf.js)
+function haversineMeters(a, b) {
+  const R = 6371000;
+  const toRad = d => (d * Math.PI) / 180;
+  const dLat = toRad(b[1] - a[1]);
+  const dLng = toRad(b[0] - a[0]);
+  const lat1 = toRad(a[1]);
+  const lat2 = toRad(b[1]);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.asin(Math.sqrt(h));
+}
+
+function clearParcelDimensionLabels() {
+  parcelDimensionMarkers.forEach(m => m.remove());
+  parcelDimensionMarkers = [];
+}
+
+// Affiche un label "XX m" au milieu de chaque côté du polygone (Polygon ou premier
+// anneau du premier polygone d'un MultiPolygon). Segments trop courts ignorés
+// (souvent des artefacts d'arrondi de coin dans le cadastre).
+function showParcelDimensionLabels(geometry) {
+  clearParcelDimensionLabels();
+  if (!geometry) return;
+
+  let ring;
+  if (geometry.type === "Polygon") {
+    ring = geometry.coordinates[0];
+  } else if (geometry.type === "MultiPolygon") {
+    ring = geometry.coordinates[0][0];
+  } else {
+    return;
+  }
+  if (!ring || ring.length < 3) return;
+
+  for (let i = 0; i < ring.length - 1; i++) {
+    const a = ring[i];
+    const b = ring[i + 1];
+    const dist = haversineMeters(a, b);
+    if (dist < 1.5) continue;
+
+    const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    const label = dist >= 10 ? `${Math.round(dist)} m` : `${dist.toFixed(1)} m`;
+
+    const el = document.createElement("div");
+    el.className = "gt-parcel-dim-label";
+    el.textContent = label;
+    el.style.cssText = `
+      background:#ffffff;
+      border:1px solid #d8d6d0;
+      border-radius:999px;
+      padding:4px 10px;
+      font-family:var(--font-sans, sans-serif);
+      font-size:12px;
+      font-weight:700;
+      color:#1a1a1a;
+      box-shadow:0 1px 3px rgba(0,0,0,0.18);
+      white-space:nowrap;
+      pointer-events:none;
+    `;
+
+    const marker = new mapboxgl.Marker({ element: el, anchor: "center" })
+      .setLngLat(mid)
+      .addTo(map);
+    parcelDimensionMarkers.push(marker);
+  }
+
+  updateParcelDimensionLabelsVisibility();
+}
+
+// Cache les labels quand on est trop dézoomé (ils se superposeraient tous) — appelé
+// depuis initMap() sur l'évènement "zoom".
+function updateParcelDimensionLabelsVisibility() {
+  const visible = map.getZoom() >= 16.5;
+  parcelDimensionMarkers.forEach(m => {
+    m.getElement().style.display = visible ? "" : "none";
+  });
 }
 
 /* ---------- Halo pulsant sur l'emplacement recherché ---------- */
@@ -2055,6 +2279,20 @@ function syncRiskLayerVisibilityFromCheckboxes() {
     });
   }
 
+  const wildfireRegimeBtn = document.getElementById("toggle-wildfire-regime");
+  if (wildfireRegimeBtn && !wildfireRegimeBtn.checked) {
+    ["gt-wildfire-regime-fill", "gt-wildfire-regime-outline"].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+    });
+  }
+
+  const fireRestrictionBtn = document.getElementById("toggle-fire-restrictions");
+  if (fireRestrictionBtn && !fireRestrictionBtn.checked) {
+    ["gt-fire-restriction-fill", "gt-fire-restriction-outline"].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+    });
+  }
+
   const metroBtn = document.getElementById("toggle-metro");
   if (metroBtn && !metroBtn.checked) {
     ["gt-metro-line", "gt-metro-label", "gt-metro-stations-points", "gt-metro-stations-label"].forEach(id => {
@@ -2093,6 +2331,8 @@ function setMapStyle(styleKey) {
     setupContaminatedSitesLayer();
     setupAgriculturalZoneLayer();
     setupCoastalErosionLayer();
+    setupWildfireRegimeLayer();
+    setupFireRestrictionLayer();
     setupMetroLayer();
     setupTrainLayer();
     setupBusStopsLayer();

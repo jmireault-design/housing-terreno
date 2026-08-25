@@ -545,6 +545,7 @@ body.dark-theme #theme-toggle:hover {
    ===================================================================== */
 .gt-gantt {
   overflow-x: auto;
+  position: relative;
 }
 .gt-gantt-row {
   display: flex;
@@ -607,11 +608,12 @@ body.dark-theme #theme-toggle:hover {
 }
 .gt-gantt-today {
   position: absolute;
-  top: -4px;
-  bottom: -1000px;
+  top: 0;
+  bottom: 0;
   width: 2px;
   background: #E24B4A;
   z-index: 1;
+  pointer-events: none;
 }
 
 body.dark-theme .gt-gantt-track {

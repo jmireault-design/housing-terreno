@@ -203,10 +203,10 @@ function renderGanttChart(loans) {
         <div class="gt-gantt-label"></div>
         <div class="gt-gantt-track">
           ${yearMarkers.map(m => `<div class="gt-gantt-year" style="left:${m.pct}%">${m.year}</div>`).join("")}
-          ${todayPct >= 0 && todayPct <= 100 ? `<div class="gt-gantt-today" style="left:${todayPct}%"></div>` : ""}
         </div>
       </div>
       ${rows}
+      ${todayPct >= 0 && todayPct <= 100 ? `<div class="gt-gantt-today" style="left:calc(172px + ${todayPct}% * (100% - 172px) / 100%)"></div>` : ""}
     </div>
     ${withoutDates > 0 ? `<div style="color:var(--color-text-tertiary);font-size:11px;margin-top:8px;">${withoutDates} prêt${withoutDates > 1 ? "s" : ""} sans dates, non affiché${withoutDates > 1 ? "s" : ""} ci-dessus.</div>` : ""}
   `;

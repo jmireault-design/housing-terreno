@@ -138,6 +138,18 @@
             <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#4D7C0F;"></span>Zone agricole protégée</div>
           </div>
 
+          <div class="gt-flood-legend" id="wildfire-regime-legend" style="display:none;">
+            <div class="gt-value-legend-title">Régime de feux (zonage MRNF)</div>
+            <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#D97706;"></span>Zone à régime de feu distinct</div>
+          </div>
+
+          <div class="gt-flood-legend" id="fire-restriction-legend" style="display:none;">
+            <div class="gt-value-legend-title">Mesures actives feux de forêt</div>
+            <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#DC2626;"></span>IFCO (feux à ciel ouvert)</div>
+            <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#EA580C;"></span>ICAF (accès en forêt)</div>
+            <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#D97706;"></span>RTF (travaux forestiers)</div>
+          </div>
+
           <div class="gt-flood-legend" id="traffic-legend" style="display:none;">
             <div class="gt-value-legend-title">Trafic routier (direct)</div>
             <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#4CAF50;"></span>Fluide</div>
@@ -188,6 +200,14 @@
               <label class="gt-layers-dropdown-item">
                 <input type="checkbox" id="toggle-agricultural-zone">
                 <i class="ti ti-tractor"></i> Zone agricole (CPTAQ)
+              </label>
+              <label class="gt-layers-dropdown-item">
+                <input type="checkbox" id="toggle-wildfire-regime">
+                <i class="ti ti-flame"></i> Régime de feux (MRNF)
+              </label>
+              <label class="gt-layers-dropdown-item">
+                <input type="checkbox" id="toggle-fire-restrictions">
+                <i class="ti ti-alert-triangle"></i> Mesures actives feux (IFCO/ICAF/RTF)
               </label>
             </div>
           </div>

@@ -77,6 +77,26 @@ const CONFIG = {
     sourceLayer: "coastal_erosion"
   },
 
+  // Zonage des régimes de feux du Québec méridional (13 zones historiques, MRNF),
+  // généré via download_wildfire_regime_zones.py + tippecanoe. Statique — mise à
+  // jour rare, donc figé en tileset comme les autres couches de risque.
+  // Laisser id vide pour désactiver la couche (fichier non encore uploadé).
+  wildfireRegimeTileset: {
+    id: "",
+    sourceLayer: "wildfire_regime"
+  },
+
+  // Mesures préventives feux de forêt (IFCO/ICAF/RTF) émises par la SOPFEU/MSP.
+  // Contrairement aux autres couches, PAS de tileset ici — ces zones changent en
+  // cours de saison, donc on les charge en direct depuis l'API WFS publique du
+  // gouvernement (voir setupFireRestrictionLayer() dans map.js). Rien à générer
+  // ni à uploader pour cette couche.
+  fireRestrictionSources: {
+    ifco: "https://geoegl.msp.gouv.qc.ca/apis/wss/complet.fcgi?service=wfs&version=1.1.0&request=getfeature&typename=msp_interdiction_feu_ciel_ouvert_ifco&outputformat=geojson&srsName=epsg:4326",
+    icaf: "https://geoegl.msp.gouv.qc.ca/apis/wss/complet.fcgi?service=wfs&version=1.1.0&request=getfeature&typename=msp_interdiction_circuler_foret_icaf&outputformat=geojson&srsName=epsg:4326",
+    rtf: "https://geoegl.msp.gouv.qc.ca/apis/wss/complet.fcgi?service=wfs&version=1.1.0&request=getfeature&typename=msp_restriction_travaux_foret_rtf&outputformat=geojson&srsName=epsg:4326"
+  },
+
   // Lignes de métro STM et trains de banlieue exo, généré via download_transit_routes.py + tippecanoe.
   metroTileset: {
     id: "jmireault.9xbiig",

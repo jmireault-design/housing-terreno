@@ -378,6 +378,32 @@ function wireUI() {
     });
   }
 
+  // Afficher / masquer le zonage des régimes de feux (MRNF, statique)
+  const wildfireRegimeToggle = document.getElementById("toggle-wildfire-regime");
+  if (wildfireRegimeToggle) {
+    wildfireRegimeToggle.addEventListener("change", () => {
+      if (!map) return;
+      ["gt-wildfire-regime-fill", "gt-wildfire-regime-outline"].forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", wildfireRegimeToggle.checked ? "visible" : "none");
+      });
+      const wildfireRegimeLegend = document.getElementById("wildfire-regime-legend");
+      if (wildfireRegimeLegend) wildfireRegimeLegend.style.display = wildfireRegimeToggle.checked ? "block" : "none";
+    });
+  }
+
+  // Afficher / masquer les mesures préventives feux de forêt actives (IFCO/ICAF/RTF, SOPFEU)
+  const fireRestrictionToggle = document.getElementById("toggle-fire-restrictions");
+  if (fireRestrictionToggle) {
+    fireRestrictionToggle.addEventListener("change", () => {
+      if (!map) return;
+      ["gt-fire-restriction-fill", "gt-fire-restriction-outline"].forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", fireRestrictionToggle.checked ? "visible" : "none");
+      });
+      const fireRestrictionLegend = document.getElementById("fire-restriction-legend");
+      if (fireRestrictionLegend) fireRestrictionLegend.style.display = fireRestrictionToggle.checked ? "block" : "none";
+    });
+  }
+
   // Créer un prêt à partir de zéro
   const newLoanBtn = document.getElementById("new-loan-btn");
   if (newLoanBtn) {
