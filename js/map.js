@@ -88,6 +88,7 @@ function initMap() {
     setupMetroLayer();
     setupTrainLayer();
     setupBusStopsLayer();
+    setupTrafficLayer();
     setupClusterLayers();
     syncRiskLayerVisibilityFromCheckboxes();
     refreshMap();
@@ -735,6 +736,44 @@ function setupBusStopsLayer() {
     // simple rond orange plutôt que de ne rien afficher du tout.
     drawBusIcon();
   });
+}
+
+/* ---------- Trafic routier en direct (fourni nativement par Mapbox) ---------- */
+function setupTrafficLayer() {
+  if (map.getLayer("gt-traffic-line")) return;
+
+  map.addSource("gt-traffic", {
+    type: "vector",
+    url: "mapbox://mapbox.mapbox-traffic-v1"
+  });
+
+  const beforeId = typeof getFirstLabelLayerId === "function" ? getFirstLabelLayerId() : undefined;
+  const trafficBtn = document.getElementById("toggle-traffic");
+  const initialVisibility = (trafficBtn && trafficBtn.checked) ? "visible" : "none";
+
+  map.addLayer({
+    id: "gt-traffic-line",
+    type: "line",
+    source: "gt-traffic",
+    "source-layer": "traffic",
+    minzoom: 8,
+    layout: {
+      "line-cap": "round",
+      "line-join": "round",
+      "visibility": initialVisibility
+    },
+    paint: {
+      "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1, 16, 5],
+      "line-color": [
+        "match", ["get", "congestion"],
+        "low", "#4CAF50",
+        "moderate", "#FFC107",
+        "heavy", "#FF5722",
+        "severe", "#B71C1C",
+        "rgba(0,0,0,0)"
+      ]
+    }
+  }, beforeId);
 }
 
 /* ---------- Surlignage du lot sélectionné (le polygone entier, pas un point) ---------- */
@@ -1924,6 +1963,7 @@ function selectLoan(id) {
   state.selectedId = id;
   state.editing = false;
   state.searchResult = null;
+  if (typeof inlineEditingCollateralIds !== "undefined") inlineEditingCollateralIds.clear();
   frameLoanCollateral(id);
   if (typeof openLoanProfilePage === "function") {
     openLoanProfilePage(id);
@@ -2035,6 +2075,11 @@ function syncRiskLayerVisibilityFromCheckboxes() {
       if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
     });
   }
+
+  const trafficBtn = document.getElementById("toggle-traffic");
+  if (trafficBtn && !trafficBtn.checked) {
+    if (map.getLayer("gt-traffic-line")) map.setLayoutProperty("gt-traffic-line", "visibility", "none");
+  }
 }
 
 /* ---------- Changement de style ---------- */
@@ -2051,6 +2096,7 @@ function setMapStyle(styleKey) {
     setupMetroLayer();
     setupTrainLayer();
     setupBusStopsLayer();
+    setupTrafficLayer();
     syncRiskLayerVisibilityFromCheckboxes();
 
     // Les lots (cadastre) ne se rattachent que si le bouton "Lots" est actif

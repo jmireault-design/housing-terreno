@@ -4,6 +4,46 @@
 
 const RISK_ORDER = { "Élevé": 0, "Moyen": 1, "Faible": 2 };
 
+// Tri par en-tête de colonne, pour les tableaux Prêts et Immeubles — cliquer une
+// fois trie en ordre croissant, recliquer inverse le sens.
+let loanSort = { key: null, dir: "asc" };
+let propSort = { key: null, dir: "asc" };
+
+function sortTh(label, key, sortState) {
+  const active = sortState.key === key;
+  const arrow = active ? (sortState.dir === "asc" ? " ▲" : " ▼") : "";
+  return `<th data-sort-key="${key}" style="cursor:pointer;user-select:none;" title="Cliquer pour trier">${label}${arrow}</th>`;
+}
+
+function wireSortHeaders(body, sortState, rerenderFn) {
+  body.querySelectorAll("th[data-sort-key]").forEach(th => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.sortKey;
+      if (sortState.key === key) {
+        sortState.dir = sortState.dir === "asc" ? "desc" : "asc";
+      } else {
+        sortState.key = key;
+        sortState.dir = "asc";
+      }
+      rerenderFn();
+    });
+  });
+}
+
+function applySort(list, sortState, getters) {
+  if (!sortState.key || !getters[sortState.key]) return list;
+  const getter = getters[sortState.key];
+  const sorted = [...list].sort((a, b) => {
+    const va = getter(a), vb = getter(b);
+    let cmp;
+    if (typeof va === "string") cmp = va.localeCompare(vb, "fr-CA");
+    else cmp = (va || 0) - (vb || 0);
+    return sortState.dir === "asc" ? cmp : -cmp;
+  });
+  return sorted;
+}
+
+
 function renderPortfolio() {
   document.querySelectorAll(".gt-subtab").forEach(t => {
     t.classList.toggle("active", t.dataset.subtab === state.portfolioTab);
@@ -45,65 +85,100 @@ function renderLoansList() {
 
   // Une ligne par immeuble en garantie (comme le fichier d'origine) — un prêt avec
   // plusieurs immeubles apparaît donc sur plusieurs lignes consécutives.
-  const rows = [];
+  let rows = [];
   list.forEach(loan => {
     const collateral = loan.collateral && loan.collateral.length > 0 ? loan.collateral : [null];
     collateral.forEach(c => {
       const p = c ? state.propertyMap[c.propertyId] : null;
       const lotInfo = p && typeof getLotInfo === "function" ? getLotInfo(p) : { postalCode: "", matricule: "", lotNumber: "" };
-      rows.push({ loan, c, p, lotInfo });
+      const amount = c ? c.amount : loan.principal;
+      const lv = p ? propertyLtv(p, amount) : 0;
+      const priorDebt = c ? (c.priorDebt || 0) : 0;
+      const equity = p ? Math.max(p.value - amount - priorDebt, 0) : null;
+      rows.push({ loan, c, p, lotInfo, amount, lv, priorDebt, equity });
     });
   });
+
+  // Le tri par en-tête de colonne (s'il est actif) prend le dessus sur le menu
+  // déroulant "Trier :" ci-dessus.
+  const LOAN_SORT_GETTERS = {
+    id: r => r.loan.id,
+    notes: r => r.loan.notes || "",
+    borrower: r => r.loan.borrower || "",
+    lender: r => r.loan.lender || "",
+    type: r => r.loan.type || "",
+    rank: r => (r.c ? r.c.rank : "") || "",
+    amount: r => r.amount || 0,
+    startDate: r => r.loan.startDate || "",
+    maturity: r => r.loan.maturity || "",
+    rate: r => r.loan.rate || 0,
+    rateAfterMaturity: r => r.loan.rateAfterMaturity || 0,
+    termMonths: r => r.loan.termMonths || 0,
+    minInterestMonths: r => r.loan.minInterestMonths || 0,
+    status: r => r.loan.status || "",
+    referredBy: r => r.loan.referredBy || "",
+    addr: r => (r.p ? r.p.addr : "") || "",
+    postalCode: r => r.lotInfo.postalCode || "",
+    lotNumber: r => r.lotInfo.lotNumber || "",
+    matricule: r => r.lotInfo.matricule || "",
+    ltv: r => r.lv || 0,
+    value: r => (r.p ? r.p.value : 0) || 0,
+    priorDebt: r => r.priorDebt || 0,
+    equity: r => (r.equity !== null ? r.equity : -Infinity),
+  };
+  rows = applySort(rows, loanSort, LOAN_SORT_GETTERS);
 
   body.innerHTML = `
     <table>
       <thead>
         <tr>
-          <th>N°</th>
-          <th>Prêt / Dossier</th>
-          <th>Contact</th>
-          <th>Prêteur</th>
-          <th>Type de prêt</th>
-          <th>Rang</th>
-          <th>Montant financé</th>
-          <th>Date de début</th>
-          <th>Échéance contractuelle</th>
-          <th>Taux d'intérêt (%)</th>
-          <th>Taux après échéance (%)</th>
-          <th>Échéance (mois)</th>
-          <th>Nb mois min. intérêt</th>
-          <th>Statut</th>
-          <th>Apporteur d'affaires</th>
-          <th>Adresse civique</th>
+          <th></th>
+          ${sortTh("N°", "id", loanSort)}
+          ${sortTh("Prêt / Dossier", "notes", loanSort)}
+          ${sortTh("Contact", "borrower", loanSort)}
+          ${sortTh("Prêteur", "lender", loanSort)}
+          ${sortTh("Type de prêt", "type", loanSort)}
+          ${sortTh("Rang", "rank", loanSort)}
+          ${sortTh("Montant financé", "amount", loanSort)}
+          ${sortTh("Date de début", "startDate", loanSort)}
+          ${sortTh("Échéance contractuelle", "maturity", loanSort)}
+          ${sortTh("Taux d'intérêt (%)", "rate", loanSort)}
+          ${sortTh("Taux après échéance (%)", "rateAfterMaturity", loanSort)}
+          ${sortTh("Échéance (mois)", "termMonths", loanSort)}
+          ${sortTh("Nb mois min. intérêt", "minInterestMonths", loanSort)}
+          ${sortTh("Statut", "status", loanSort)}
+          ${sortTh("Apporteur d'affaires", "referredBy", loanSort)}
+          ${sortTh("Adresse civique", "addr", loanSort)}
           <th>Province</th>
-          <th>Code postal</th>
+          ${sortTh("Code postal", "postalCode", loanSort)}
           <th>Pays</th>
-          <th>Lot cadastral</th>
-          <th>Matricule</th>
-          <th>LTV part</th>
+          ${sortTh("Lot cadastral", "lotNumber", loanSort)}
+          ${sortTh("Matricule", "matricule", loanSort)}
+          ${sortTh("LTV part", "ltv", loanSort)}
           <th>Google Maps</th>
           <th>Apple Maps</th>
           <th>Street View</th>
           <th>Rôle / taxes</th>
           <th>Lot cadastral (recherche)</th>
           <th>Notes</th>
-          <th>Valeur estimée</th>
-          <th>Dette de 1er rang</th>
-          <th>Équité restante</th>
+          ${sortTh("Valeur estimée", "value", loanSort)}
+          ${sortTh("Dette de 1er rang", "priorDebt", loanSort)}
+          ${sortTh("Équité restante", "equity", loanSort)}
         </tr>
       </thead>
       <tbody>
-        ${rows.map(({ loan, c, p, lotInfo }) => {
-          const amount = c ? c.amount : loan.principal;
-          const lv = p ? propertyLtv(p, amount) : 0;
+        ${rows.map(({ loan, c, p, lotInfo, amount, lv, priorDebt, equity }) => {
           const mapsUrl = p ? `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}` : "";
           const appleMapsUrl = p ? `https://maps.apple.com/?ll=${p.lat},${p.lng}&q=${encodeURIComponent(p.addr)}` : "";
           const streetViewUrl = p ? `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${p.lat},${p.lng}` : "";
           const roleSearchUrl = p ? `https://www.google.com/search?q=${encodeURIComponent("rôle évaluation " + p.addr + " " + p.city)}` : "";
-          const priorDebt = c ? (c.priorDebt || 0) : 0;
-          const equity = p ? Math.max(p.value - amount - priorDebt, 0) : null;
           return `
             <tr data-loan-id="${loan.id}" data-property-id="${p ? p.id : ""}">
+              <td>
+                <button class="gt-open-loan-btn" data-loan-id="${loan.id}" title="Voir la fiche complète du prêt" style="display:flex;align-items:center;gap:4px;background:var(--color-brand-blue,#2277B5);color:#FFFFFF;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">
+                  <i class="ti ti-file-text"></i> Voir
+                </button>
+              </td>
               <td style="color:var(--color-text-secondary);font-size:11px">${loan.id.replace(/\D/g, "")}</td>
               <td><input class="gt-inline-edit" data-loan-id="${loan.id}" data-field="notes" value="${loan.notes || ""}" style="font-weight:500" /></td>
               <td><input class="gt-inline-edit" data-loan-id="${loan.id}" data-field="borrower" value="${loan.borrower || ""}" /></td>
@@ -173,6 +248,7 @@ function renderLoansList() {
   `;
 
   wireInlineEdits(body);
+  wireSortHeaders(body, loanSort, renderLoansList);
 
   body.querySelectorAll("tr[data-loan-id]").forEach(row => {
     row.addEventListener("click", (e) => {
@@ -260,12 +336,35 @@ function renderPropertiesList() {
   if (fCity !== "all") list = list.filter(p => p.city === fCity);
   if (fType !== "all") list = list.filter(p => p.type === fType);
 
-  // Trier par exposition totale (plus grand d'abord)
-  list.sort((a, b) => {
-    const aTotal = loansForProperty(a.id).reduce((s, l) => s + l.amount, 0);
-    const bTotal = loansForProperty(b.id).reduce((s, l) => s + l.amount, 0);
-    return bTotal - aTotal;
+  // Trier par exposition totale par défaut (plus grand d'abord), sauf si un
+  // tri par en-tête de colonne est actif.
+  let enriched = list.map(p => {
+    const loans = loansForProperty(p.id);
+    const totalGuar = loans.reduce((s, l) => s + l.amount, 0);
+    const lv = propertyLtv(p, totalGuar);
+    const lotInfo = typeof getLotInfo === "function" ? getLotInfo(p) : { postalCode: "", matricule: "", lotNumber: "" };
+    return { p, loans, totalGuar, lv, lotInfo };
   });
+
+  if (!propSort.key) {
+    enriched.sort((a, b) => b.totalGuar - a.totalGuar);
+  } else {
+    const PROP_SORT_GETTERS = {
+      addr: r => r.p.addr || "",
+      owner: r => r.p.owner || "",
+      value: r => r.p.value || 0,
+      yearBuilt: r => r.p.yearBuilt || 0,
+      totalGuar: r => r.totalGuar || 0,
+      ltv: r => r.lv || 0,
+      loanCount: r => r.loans.length,
+      city: r => r.p.city || "",
+      type: r => r.p.type || "",
+      postalCode: r => r.lotInfo.postalCode || "",
+      lotNumber: r => r.lotInfo.lotNumber || "",
+      matricule: r => r.lotInfo.matricule || "",
+    };
+    enriched = applySort(enriched, propSort, PROP_SORT_GETTERS);
+  }
 
   document.getElementById("props-count").textContent = `${list.length} immeubles`;
 
@@ -279,32 +378,34 @@ function renderPropertiesList() {
     <table>
       <thead>
         <tr>
-          <th>Adresse</th>
-          <th>Propriétaire</th>
-          <th>Valeur</th>
-          <th>Année construction</th>
-          <th>Total garanti</th>
-          <th>LTV total</th>
-          <th>Prêts</th>
-          <th>Ville</th>
-          <th>Type</th>
+          <th></th>
+          ${sortTh("Adresse", "addr", propSort)}
+          ${sortTh("Propriétaire", "owner", propSort)}
+          ${sortTh("Valeur", "value", propSort)}
+          ${sortTh("Année construction", "yearBuilt", propSort)}
+          ${sortTh("Total garanti", "totalGuar", propSort)}
+          ${sortTh("LTV total", "ltv", propSort)}
+          ${sortTh("Prêts", "loanCount", propSort)}
+          ${sortTh("Ville", "city", propSort)}
+          ${sortTh("Type", "type", propSort)}
           <th>Province</th>
-          <th>Code postal</th>
+          ${sortTh("Code postal", "postalCode", propSort)}
           <th>Pays</th>
-          <th>Lot cadastral</th>
-          <th>Matricule</th>
+          ${sortTh("Lot cadastral", "lotNumber", propSort)}
+          ${sortTh("Matricule", "matricule", propSort)}
           <th>Google Maps</th>
         </tr>
       </thead>
       <tbody>
-        ${list.map(p => {
-          const loans = loansForProperty(p.id);
-          const totalGuar = loans.reduce((s, l) => s + l.amount, 0);
-          const lv = propertyLtv(p, totalGuar);
-          const lotInfo = typeof getLotInfo === "function" ? getLotInfo(p) : { postalCode: "", matricule: "", lotNumber: "" };
+        ${enriched.map(({ p, loans, totalGuar, lv, lotInfo }) => {
           const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
           return `
             <tr data-property-id="${p.id}">
+              <td>
+                <button class="gt-open-loan-btn" data-property-id="${p.id}" title="Voir la fiche complète de l'immeuble" style="display:flex;align-items:center;gap:4px;background:var(--color-brand-blue,#2277B5);color:#FFFFFF;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">
+                  <i class="ti ti-building"></i> Voir
+                </button>
+              </td>
               <td>
                 <input class="gt-inline-edit" data-property-id="${p.id}" data-field="addr" value="${p.addr || ""}" style="font-weight:500" />
                 <input class="gt-inline-edit" data-property-id="${p.id}" data-field="neighborhood" value="${p.neighborhood || ""}" placeholder="Quartier" style="font-size:11px;color:var(--color-text-secondary)" />
@@ -336,6 +437,7 @@ function renderPropertiesList() {
   `;
 
   wireInlineEdits(body);
+  wireSortHeaders(body, propSort, renderPropertiesList);
 
   body.querySelectorAll("tr[data-property-id]").forEach(row => {
     row.addEventListener("click", (e) => {

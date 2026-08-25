@@ -19,7 +19,7 @@
 
 <div class="gt-app">
   <div class="gt-tabs">
-    <div class="gt-logo"><img src="assets/logo.svg" alt="Terreno" class="gt-logo-img" style="width:32px;height:32px;min-width:32px;max-width:32px;vertical-align:middle;margin-right:10px;display:inline-block;" /><span>Terren<span style="color:var(--color-brand-blue, #2277B5);">o</span></span></div>
+    <div class="gt-logo"><img src="assets/logo.svg" alt="Terreno" class="gt-logo-img" style="width:44px;height:44px;min-width:44px;max-width:44px;vertical-align:middle;margin-right:12px;display:inline-block;" /><span style="font-size:24px;">Terren<span style="color:#2277B5;">o</span></span></div>
     <div class="gt-tab active" data-view="map"><i class="ti ti-map-pin"></i> Carte</div>
     <div class="gt-tab" data-view="portfolio"><i class="ti ti-list"></i> Portfolio</div>
     <div class="gt-tab" data-view="dash"><i class="ti ti-chart-bar"></i> Tableau de bord</div>
@@ -137,6 +137,14 @@
             <div class="gt-value-legend-title">Zone agricole (CPTAQ)</div>
             <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#4D7C0F;"></span>Zone agricole protégée</div>
           </div>
+
+          <div class="gt-flood-legend" id="traffic-legend" style="display:none;">
+            <div class="gt-value-legend-title">Trafic routier (direct)</div>
+            <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#4CAF50;"></span>Fluide</div>
+            <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#FFC107;"></span>Modéré</div>
+            <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#FF5722;"></span>Dense</div>
+            <div class="gt-flood-legend-row"><span class="gt-flood-swatch" style="background:#B71C1C;"></span>Congestion sévère</div>
+          </div>
         </div>
 
         <div class="gt-style-toggle">
@@ -201,6 +209,10 @@
                 <input type="checkbox" id="toggle-bus-stops">
                 <i class="ti ti-bus"></i> Arrêts d'autobus (STM)
               </label>
+              <label class="gt-layers-dropdown-item">
+                <input type="checkbox" id="toggle-traffic">
+                <i class="ti ti-car"></i> Trafic routier (direct)
+              </label>
             </div>
           </div>
         </div>
@@ -242,8 +254,8 @@
           <option value="Medium">Risque moyen</option>
           <option value="High">Risque élevé</option>
         </select>
-        <div class="gt-list-count" id="loans-count"></div>
-        <button class="gt-edit-btn-accent" id="new-loan-btn" style="margin-left:auto;">
+        <div class="gt-list-count" id="loans-count" style="margin-left:auto; margin-right:12px; flex:0 0 auto; text-align:right;"></div>
+        <button class="gt-edit-btn-accent" id="new-loan-btn">
           <i class="ti ti-plus"></i> Nouveau prêt
         </button>
       </div>
@@ -255,8 +267,8 @@
       <div class="gt-list-toolbar">
         <select id="props-filter-city"></select>
         <select id="props-filter-type"></select>
-        <div class="gt-list-count" id="props-count"></div>
-        <button class="gt-edit-btn-accent" id="new-property-btn" style="margin-left:auto;">
+        <div class="gt-list-count" id="props-count" style="margin-left:auto; margin-right:12px; flex:0 0 auto; text-align:right;"></div>
+        <button class="gt-edit-btn-accent" id="new-property-btn">
           <i class="ti ti-plus"></i> Nouvel immeuble
         </button>
       </div>
@@ -278,6 +290,14 @@
         <div class="gt-card gt-card-wide">
           <h4>Alertes et rappels</h4>
           <div id="alerts"></div>
+        </div>
+        <div class="gt-card gt-card-wide">
+          <h4>Résumé des prêts suivis</h4>
+          <div id="loans-summary-table"></div>
+        </div>
+        <div class="gt-card gt-card-wide">
+          <h4>Résumé des immeubles en garantie</h4>
+          <div id="properties-summary-table"></div>
         </div>
       </div>
     </div>

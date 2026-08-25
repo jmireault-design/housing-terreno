@@ -284,6 +284,19 @@ function wireUI() {
     });
   }
 
+  // Afficher / masquer le trafic routier en direct
+  const trafficToggle = document.getElementById("toggle-traffic");
+  if (trafficToggle) {
+    trafficToggle.addEventListener("change", () => {
+      if (!map) return;
+      if (map.getLayer("gt-traffic-line")) {
+        map.setLayoutProperty("gt-traffic-line", "visibility", trafficToggle.checked ? "visible" : "none");
+      }
+      const trafficLegend = document.getElementById("traffic-legend");
+      if (trafficLegend) trafficLegend.style.display = trafficToggle.checked ? "block" : "none";
+    });
+  }
+
   // Afficher / masquer les limites municipales
   const muniToggle = document.getElementById("toggle-municipalities");
   if (muniToggle) {

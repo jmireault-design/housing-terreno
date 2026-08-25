@@ -5,8 +5,8 @@
     "guarantor": "Sandy & Stéphane Filion",
     "lender": "Marc Beaudoin & Jonathan Mireault",
     "type": "Mortgage-backed",
-    "principal": 600000,
-    "balance": 600000,
+    "principal": 1200000,
+    "balance": 1200000,
     "rate": 6,
     "startDate": "2024-08-01",
     "maturity": "2024-11-01",
@@ -15,25 +15,9 @@
     "risk": "Medium",
     "referredBy": "Marc Beaudoin",
     "notes": "Prêt St-Denis",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P001",
-        "amount": 600000,
-        "rank": "First rank"
-      }
-    ],
-    "termMonths": 3,
-    "minInterestMonths": 3,
-    "rateAfterMaturity": 18
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P001", "amount": 1200000, "rank": "First rank"}],
+    "termMonths": 3, "minInterestMonths": 3, "rateAfterMaturity": 18
   },
   {
     "id": "L002",
@@ -51,25 +35,9 @@
     "risk": "Medium",
     "referredBy": "Marc Beaudoin",
     "notes": "Prêt Rosanna Antennucci",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P002",
-        "amount": 250000,
-        "rank": "First rank"
-      }
-    ],
-    "termMonths": 6,
-    "minInterestMonths": 3,
-    "rateAfterMaturity": 24
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P002", "amount": 250000, "rank": "First rank"}],
+    "termMonths": 6, "minInterestMonths": 3, "rateAfterMaturity": 24
   },
   {
     "id": "L003",
@@ -87,25 +55,9 @@
     "risk": "Medium",
     "referredBy": "Marc Beaudoin",
     "notes": "Prêt Martigny Ouest",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P003",
-        "amount": 325000,
-        "rank": "First rank"
-      }
-    ],
-    "termMonths": 3,
-    "minInterestMonths": 3,
-    "rateAfterMaturity": 18
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P003", "amount": 325000, "rank": "First rank"}],
+    "termMonths": 3, "minInterestMonths": 3, "rateAfterMaturity": 18
   },
   {
     "id": "L004",
@@ -123,30 +75,9 @@
     "risk": "Medium",
     "referredBy": "Marc Beaudoin",
     "notes": "Prêt Avenue Victoria",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P004",
-        "amount": 400000,
-        "rank": "First rank"
-      },
-      {
-        "propertyId": "P005",
-        "amount": 400000,
-        "rank": "First rank"
-      }
-    ],
-    "termMonths": 6,
-    "minInterestMonths": 6,
-    "rateAfterMaturity": 18
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P004", "amount": 400000, "rank": "First rank"}, {"propertyId": "P005", "amount": 400000, "rank": "First rank"}],
+    "termMonths": 6, "minInterestMonths": 6, "rateAfterMaturity": 18
   },
   {
     "id": "L005",
@@ -164,30 +95,9 @@
     "risk": "Medium",
     "referredBy": "Nicolas Larivière",
     "notes": "Prêt Stéphane Tommassini",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P006",
-        "amount": 779000,
-        "rank": "First rank"
-      },
-      {
-        "propertyId": "P007",
-        "amount": 779000,
-        "rank": "Second rank"
-      }
-    ],
-    "termMonths": 12,
-    "minInterestMonths": 6,
-    "rateAfterMaturity": 18
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P006", "amount": 779000, "rank": "First rank"}, {"propertyId": "P007", "amount": 779000, "rank": "Second rank"}],
+    "termMonths": 12, "minInterestMonths": 6, "rateAfterMaturity": 18
   },
   {
     "id": "L006",
@@ -195,8 +105,8 @@
     "guarantor": "Valérie Parisé",
     "lender": "Marc Beaudoin & Jonathan Mireault",
     "type": "Mortgage-backed",
-    "principal": 325000,
-    "balance": 325000,
+    "principal": 650000,
+    "balance": 650000,
     "rate": 12,
     "startDate": "2025-06-17",
     "maturity": "2026-06-17",
@@ -205,35 +115,9 @@
     "risk": "Medium",
     "referredBy": "Marc Beaudoin",
     "notes": "Prêt Centre SIDA Valérie Parisé",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P008",
-        "amount": 325000,
-        "rank": "First rank"
-      },
-      {
-        "propertyId": "P009",
-        "amount": 325000,
-        "rank": "First rank"
-      },
-      {
-        "propertyId": "P010",
-        "amount": 325000,
-        "rank": "First rank"
-      }
-    ],
-    "termMonths": 12,
-    "minInterestMonths": 6,
-    "rateAfterMaturity": 18
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P008", "amount": 650000, "rank": "First rank"}, {"propertyId": "P009", "amount": 650000, "rank": "First rank"}, {"propertyId": "P010", "amount": 650000, "rank": "First rank"}],
+    "termMonths": 12, "minInterestMonths": 6, "rateAfterMaturity": 18
   },
   {
     "id": "L007",
@@ -241,8 +125,8 @@
     "guarantor": "Asim Sheik",
     "lender": "Marc Beaudoin & Jonathan Mireault",
     "type": "Mortgage-backed",
-    "principal": 250000,
-    "balance": 250000,
+    "principal": 500000,
+    "balance": 500000,
     "rate": 12,
     "startDate": "2025-04-01",
     "maturity": "2026-04-01",
@@ -251,25 +135,9 @@
     "risk": "Medium",
     "referredBy": "Nicolas Larivière",
     "notes": "Prêt Motel Le Marigôt",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P011",
-        "amount": 250000,
-        "rank": "First rank"
-      }
-    ],
-    "termMonths": 12,
-    "minInterestMonths": 6,
-    "rateAfterMaturity": 18
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P011", "amount": 500000, "rank": "First rank"}],
+    "termMonths": 12, "minInterestMonths": 6, "rateAfterMaturity": 18
   },
   {
     "id": "L008",
@@ -277,8 +145,8 @@
     "guarantor": "David Hauptman",
     "lender": "Marc Beaudoin & Jonathan Mireault",
     "type": "Collateral",
-    "principal": 100000,
-    "balance": 100000,
+    "principal": 200000,
+    "balance": 200000,
     "rate": 6,
     "startDate": "2026-06-23",
     "maturity": "2026-12-23",
@@ -287,25 +155,9 @@
     "risk": "Medium",
     "referredBy": "Jonathan Mireault",
     "notes": "Prêt Bridge David Hauptman",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P012",
-        "amount": 100000,
-        "rank": "Second rank"
-      }
-    ],
-    "termMonths": 6,
-    "minInterestMonths": 6,
-    "rateAfterMaturity": 24
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P012", "amount": 200000, "rank": "Second rank"}],
+    "termMonths": 6, "minInterestMonths": 6, "rateAfterMaturity": 24
   },
   {
     "id": "L009",
@@ -323,27 +175,8 @@
     "risk": "Medium",
     "referredBy": "Mike Daoui",
     "notes": "Prêt Dany Gougeon",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P013",
-        "amount": 0,
-        "rank": "First rank"
-      },
-      {
-        "propertyId": "P014",
-        "amount": 0,
-        "rank": "First rank"
-      }
-    ]
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P013", "amount": 0, "rank": "First rank"}, {"propertyId": "P014", "amount": 0, "rank": "First rank"}]
   },
   {
     "id": "L010",
@@ -351,8 +184,8 @@
     "guarantor": "Maxime Langlois",
     "lender": "Marc Beaudoin & Jonathan Mireault",
     "type": "Collateral",
-    "principal": 300000,
-    "balance": 300000,
+    "principal": 600000,
+    "balance": 600000,
     "rate": 12,
     "startDate": "2026-07-20",
     "maturity": "2027-07-20",
@@ -361,30 +194,9 @@
     "risk": "Medium",
     "referredBy": "Mike Daoui",
     "notes": "Prêt Ferme & Maison neuve - Maxime Langlois",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P015",
-        "amount": 300000,
-        "rank": "First rank"
-      },
-      {
-        "propertyId": "P016",
-        "amount": 300000,
-        "rank": "First rank"
-      }
-    ],
-    "termMonths": 12,
-    "minInterestMonths": 6,
-    "rateAfterMaturity": 18
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P015", "amount": 600000, "rank": "First rank"}, {"propertyId": "P016", "amount": 600000, "rank": "First rank"}],
+    "termMonths": 12, "minInterestMonths": 6, "rateAfterMaturity": 18
   },
   {
     "id": "L011",
@@ -402,25 +214,9 @@
     "risk": "Medium",
     "referredBy": "Mike Daoui",
     "notes": "Prêt Julie Maisonneuve",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P017",
-        "amount": 300000,
-        "rank": "First rank"
-      }
-    ],
-    "termMonths": 12,
-    "minInterestMonths": 6,
-    "rateAfterMaturity": 18
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P017", "amount": 300000, "rank": "First rank"}],
+    "termMonths": 12, "minInterestMonths": 6, "rateAfterMaturity": 18
   },
   {
     "id": "L012",
@@ -438,22 +234,8 @@
     "risk": "Medium",
     "referredBy": "Mike Daoui",
     "notes": "Dossier Jonathan Bastien (Record d'hypothèque légale)",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P018",
-        "amount": 0,
-        "rank": "Unsecured"
-      }
-    ]
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P018", "amount": 0, "rank": "Unsecured"}]
   },
   {
     "id": "L013",
@@ -464,32 +246,16 @@
     "principal": 289250,
     "balance": 289250,
     "rate": 12,
-    "startDate": "2026-08-13",
-    "maturity": "2026-08-13",
+    "startDate": "2026-08-01",
+    "maturity": "2027-02-01",
     "review": "",
     "status": "pending",
     "risk": "Medium",
     "referredBy": "Nicolas Larivière",
     "notes": "Prêt Maison Val-David",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P019",
-        "amount": 289250,
-        "rank": "First rank"
-      }
-    ],
-    "termMonths": 6,
-    "minInterestMonths": 6,
-    "rateAfterMaturity": 18
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P019", "amount": 289250, "rank": "First rank"}],
+    "termMonths": 6, "minInterestMonths": 6, "rateAfterMaturity": 18
   },
   {
     "id": "L014",
@@ -497,8 +263,8 @@
     "guarantor": "Valérie Beauregard",
     "lender": "—",
     "type": "Mortgage-backed",
-    "principal": 0,
-    "balance": 0,
+    "principal": 270000,
+    "balance": 270000,
     "rate": 15,
     "startDate": "",
     "maturity": "",
@@ -507,22 +273,8 @@
     "risk": "Medium",
     "referredBy": "Nicolas Larivière",
     "notes": "Dossier Valérie Beauregard",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P020",
-        "amount": 0,
-        "rank": "Second rank"
-      }
-    ],
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P020", "amount": 270000, "rank": "Second rank"}],
     "rateAfterMaturity": 24
   },
   {
@@ -531,8 +283,8 @@
     "guarantor": "Philippe Lambert",
     "lender": "Marc Beaudoin & Jonathan Mireault",
     "type": "Mortgage-backed",
-    "principal": 500000,
-    "balance": 500000,
+    "principal": 1000000,
+    "balance": 1000000,
     "rate": 12,
     "startDate": "2026-04-01",
     "maturity": "2027-04-01",
@@ -541,25 +293,9 @@
     "risk": "Medium",
     "referredBy": "Marc Beaudoin",
     "notes": "Dossier Achat Philippe Lambert",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P021",
-        "amount": 500000,
-        "rank": "First rank"
-      }
-    ],
-    "termMonths": 12,
-    "minInterestMonths": 6,
-    "rateAfterMaturity": 18
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P021", "amount": 1000000, "rank": "First rank"}],
+    "termMonths": 12, "minInterestMonths": 6, "rateAfterMaturity": 18
   },
   {
     "id": "L016",
@@ -577,25 +313,9 @@
     "risk": "Medium",
     "referredBy": "Nicolas Larivière",
     "notes": "Prêt Joseph Bowe & Eric Peterson",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P022",
-        "amount": 331500,
-        "rank": "First rank"
-      }
-    ],
-    "termMonths": 6,
-    "minInterestMonths": 6,
-    "rateAfterMaturity": 24
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P022", "amount": 331500, "rank": "First rank"}],
+    "termMonths": 6, "minInterestMonths": 6, "rateAfterMaturity": 24
   },
   {
     "id": "L017",
@@ -613,30 +333,9 @@
     "risk": "Medium",
     "referredBy": "Mike Daoui",
     "notes": "Prêt Nouveau Chalet Pascal Boivin",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P023",
-        "amount": 0,
-        "rank": "First rank"
-      },
-      {
-        "propertyId": "P024",
-        "amount": 0,
-        "rank": "Second rank"
-      }
-    ],
-    "termMonths": 3,
-    "minInterestMonths": 3,
-    "rateAfterMaturity": 24
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P023", "amount": 0, "rank": "First rank"}, {"propertyId": "P024", "amount": 0, "rank": "Second rank"}],
+    "termMonths": 3, "minInterestMonths": 3, "rateAfterMaturity": 24
   },
   {
     "id": "L018",
@@ -654,25 +353,9 @@
     "risk": "Medium",
     "referredBy": "Mike Daoui",
     "notes": "Marge Mike Daoui",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P025",
-        "amount": 200000,
-        "rank": "Second rank"
-      }
-    ],
-    "termMonths": 6,
-    "minInterestMonths": 6,
-    "rateAfterMaturity": 24
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P025", "amount": 200000, "rank": "Second rank"}],
+    "termMonths": 6, "minInterestMonths": 6, "rateAfterMaturity": 24
   },
   {
     "id": "L019",
@@ -684,30 +367,14 @@
     "balance": 300000,
     "rate": 3,
     "startDate": "2024-01-01",
-    "maturity": "2024-06-01",
+    "maturity": "2026-12-31",
     "review": "",
     "status": "active",
     "risk": "Medium",
     "referredBy": "Marc Beaudoin",
     "notes": "Prêt Marc Beaudoin",
-    "docs": {
-      "loan": false,
-      "guarantee": false,
-      "mortgage": false,
-      "appraisal": false,
-      "insurance": false,
-      "tax": false,
-      "title": false
-    },
-    "collateral": [
-      {
-        "propertyId": "P026",
-        "amount": 300000,
-        "rank": "First rank"
-      }
-    ],
-    "termMonths": 6,
-    "minInterestMonths": 6,
-    "rateAfterMaturity": 18
+    "docs": {"loan": false, "guarantee": false, "mortgage": false, "appraisal": false, "insurance": false, "tax": false, "title": false},
+    "collateral": [{"propertyId": "P026", "amount": 300000, "rank": "First rank"}],
+    "termMonths": 6, "minInterestMonths": 6, "rateAfterMaturity": 18
   }
 ]

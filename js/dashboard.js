@@ -10,6 +10,8 @@ function renderDashboard() {
   renderExposureByType(savedLoans);
   renderAlerts(savedLoans);
   renderGanttChart(savedLoans);
+  renderLoansSummaryTable(savedLoans);
+  renderPropertiesSummaryTable(savedLoans);
 }
 
 function renderMetrics(loans) {
@@ -144,11 +146,20 @@ function renderGanttChart(loans) {
     return;
   }
 
-  // Plage globale (du premier début à la dernière échéance), avec un peu de marge
+  // Plage globale (du premier début à la dernière échéance), avec un peu de marge.
+  // On écarte les valeurs extrêmes (au-delà de la médiane + 2 ans) pour éviter
+  // qu'un seul prêt avec une échéance très lointaine n'étire toute l'échelle et
+  // ne laisse un grand espace vide à droite — les barres concernées restent
+  // affichées, juste "coupées" visuellement au bord droit du graphique.
   const starts = withDates.map(l => new Date(l.startDate).getTime());
   const ends = withDates.map(l => new Date(l.maturity).getTime());
+  const sortedEnds = [...ends].sort((a, b) => a - b);
+  const medianEnd = sortedEnds[Math.floor(sortedEnds.length / 2)];
+  const twoYears = 2 * 365 * 24 * 3600 * 1000;
+  const cappedMaxEnd = Math.min(Math.max(...ends), medianEnd + twoYears);
+
   let rangeStart = Math.min(...starts);
-  let rangeEnd = Math.max(...ends);
+  let rangeEnd = Math.max(cappedMaxEnd, ...starts); // jamais avant le premier début
   const pad = (rangeEnd - rangeStart) * 0.03 || (30 * 24 * 3600 * 1000);
   rangeStart -= pad;
   rangeEnd += pad;
@@ -173,7 +184,7 @@ function renderGanttChart(loans) {
       const s = new Date(l.startDate).getTime();
       const e = new Date(l.maturity).getTime();
       const left = ((s - rangeStart) / totalSpan) * 100;
-      const width = Math.max(((e - s) / totalSpan) * 100, 0.6);
+      const width = Math.min(Math.max(((e - s) / totalSpan) * 100, 0.6), 100 - left);
       const status = CONFIG.statusMap[l.status] || CONFIG.statusMap.active;
       return `
         <div class="gt-gantt-row" data-loan-id="${l.id}">
@@ -202,5 +213,159 @@ function renderGanttChart(loans) {
 
   mount.querySelectorAll("[data-loan-id]").forEach(el => {
     el.addEventListener("click", () => selectLoan(el.dataset.loanId));
+  });
+}
+
+/* =====================================================================
+   Exposition aux risques — combien d'immeubles (parmi les prêts suivis)
+   sont touchés par chacune des 5 couches de risque
+   ===================================================================== */
+function renderRiskExposure(loans) {
+  const mount = document.getElementById("risk-exposure-bars");
+  if (!mount) return;
+
+  const propertyIds = new Set();
+  loans.forEach(l => (l.collateral || []).forEach(c => propertyIds.add(c.propertyId)));
+  const properties = [...propertyIds].map(pid => state.propertyMap[pid]).filter(Boolean);
+
+  const riskCounts = {
+    "Zone inondable": properties.filter(p => p.floodZone).length,
+    "Glissement de terrain": properties.filter(p => p.landslideZone).length,
+    "Terrain contaminé": properties.filter(p => p.contaminatedSite).length,
+    "Zone agricole (CPTAQ)": properties.filter(p => p.inAgriculturalZone).length,
+    "Érosion côtière / mvt terrain": properties.filter(p => p.coastalErosionZone).length,
+  };
+
+  const totalAtRisk = Object.values(riskCounts).reduce((a, b) => a + b, 0);
+  if (totalAtRisk === 0) {
+    mount.innerHTML = `<div style="color:var(--color-text-tertiary);font-size:12px">Aucun immeuble touché par une zone de risque connue, parmi les prêts suivis.</div>`;
+    return;
+  }
+
+  const max = Math.max(...Object.values(riskCounts), 1);
+  mount.innerHTML = Object.entries(riskCounts)
+    .filter(([, count]) => count > 0)
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, count]) => `
+      <div class="gt-bar">
+        <span class="gt-bar-label">${label}</span>
+        <span class="gt-bar-track">
+          <span class="gt-bar-fill" style="width:${(count / max) * 100}%; background:#B45309;"></span>
+        </span>
+        <span class="gt-bar-val">${count} immeuble${count > 1 ? "s" : ""}</span>
+      </div>
+    `).join("");
+}
+
+/* =====================================================================
+   Tableau résumé — tous les prêts suivis
+   ===================================================================== */
+function renderLoansSummaryTable(loans) {
+  const mount = document.getElementById("loans-summary-table");
+  if (!mount) return;
+
+  if (loans.length === 0) {
+    mount.innerHTML = `<div style="color:var(--color-text-tertiary);font-size:12px">Aucun prêt suivi. Ajoute des prêts au suivi depuis Portfolio ou la Carte.</div>`;
+    return;
+  }
+
+  const rows = loans
+    .slice()
+    .sort((a, b) => (b.balance || 0) - (a.balance || 0))
+    .map(l => {
+      const s = CONFIG.statusMap[l.status] || CONFIG.statusMap.active;
+      const lv = loanLtv(l, state.propertyMap);
+      return `
+        <tr data-loan-id="${l.id}" style="cursor:pointer;">
+          <td>${l.borrower || "(sans nom)"}</td>
+          <td>${l.lender || "—"}</td>
+          <td>${l.type || "—"}</td>
+          <td><span style="color:${s.color};font-weight:600;">${s.label}</span></td>
+          <td>${fmtK(l.balance || 0)}</td>
+          <td style="color:${ltvColor(lv)};font-weight:600;">${lv}%</td>
+          <td>${l.maturity || "—"}</td>
+        </tr>
+      `;
+    }).join("");
+
+  mount.innerHTML = `
+    <table style="width:100%; font-size:13px; border-collapse:collapse;">
+      <thead>
+        <tr style="text-align:left; color:var(--color-text-tertiary); font-size:11px; text-transform:uppercase;">
+          <th style="padding:6px 8px;">Emprunteur</th>
+          <th style="padding:6px 8px;">Prêteur</th>
+          <th style="padding:6px 8px;">Type</th>
+          <th style="padding:6px 8px;">Statut</th>
+          <th style="padding:6px 8px;">Encours</th>
+          <th style="padding:6px 8px;">LTV</th>
+          <th style="padding:6px 8px;">Échéance</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+
+  mount.querySelectorAll("[data-loan-id]").forEach(el => {
+    el.addEventListener("click", () => selectLoan(el.dataset.loanId));
+    el.addEventListener("mouseenter", () => el.style.background = "var(--color-bg-secondary,#F5F4F0)");
+    el.addEventListener("mouseleave", () => el.style.background = "");
+  });
+}
+
+/* =====================================================================
+   Tableau résumé — tous les immeubles en garantie (dédupliqués), avec un
+   coup d'œil rapide sur les risques connus pour chacun
+   ===================================================================== */
+function renderPropertiesSummaryTable(loans) {
+  const mount = document.getElementById("properties-summary-table");
+  if (!mount) return;
+
+  const propertyIds = new Set();
+  loans.forEach(l => (l.collateral || []).forEach(c => propertyIds.add(c.propertyId)));
+  const properties = [...propertyIds].map(pid => state.propertyMap[pid]).filter(Boolean);
+
+  if (properties.length === 0) {
+    mount.innerHTML = `<div style="color:var(--color-text-tertiary);font-size:12px">Aucun immeuble en garantie parmi les prêts suivis.</div>`;
+    return;
+  }
+
+  const rows = properties
+    .slice()
+    .sort((a, b) => (b.value || 0) - (a.value || 0))
+    .map(p => {
+      const riskCount = [p.floodZone, p.landslideZone, p.contaminatedSite, p.inAgriculturalZone, p.coastalErosionZone]
+        .filter(Boolean).length;
+      return `
+        <tr data-property-id="${p.id}" style="cursor:pointer;">
+          <td>${p.addr}</td>
+          <td>${p.city || "—"}</td>
+          <td>${p.type || "—"}</td>
+          <td>${p.yearBuilt || "—"}</td>
+          <td>${fmtK(p.value || 0)}</td>
+          <td>${riskCount > 0 ? `<span style="color:#B45309;font-weight:600;">⚠ ${riskCount}</span>` : "—"}</td>
+        </tr>
+      `;
+    }).join("");
+
+  mount.innerHTML = `
+    <table style="width:100%; font-size:13px; border-collapse:collapse;">
+      <thead>
+        <tr style="text-align:left; color:var(--color-text-tertiary); font-size:11px; text-transform:uppercase;">
+          <th style="padding:6px 8px;">Adresse</th>
+          <th style="padding:6px 8px;">Ville</th>
+          <th style="padding:6px 8px;">Type</th>
+          <th style="padding:6px 8px;">Année</th>
+          <th style="padding:6px 8px;">Valeur</th>
+          <th style="padding:6px 8px;">Risques</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+
+  mount.querySelectorAll("[data-property-id]").forEach(el => {
+    el.addEventListener("click", () => selectProperty(el.dataset.propertyId));
+    el.addEventListener("mouseenter", () => el.style.background = "var(--color-bg-secondary,#F5F4F0)");
+    el.addEventListener("mouseleave", () => el.style.background = "");
   });
 }

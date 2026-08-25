@@ -105,6 +105,16 @@ function renderLoanProfilePage(loan) {
       <div class="gt-lp-collateral-grid">
         ${collateral.map(({ c, p }) => {
           const lv = propertyLtv(p, c.amount);
+          const lotInfo = typeof getLotInfo === "function" ? getLotInfo(p) : {};
+          const sqft = p.lotAreaSqFt || (p.lotAreaSqM ? Math.round(p.lotAreaSqM * 10.7639) : 0);
+
+          const riskFlags = [];
+          if (p.floodZone) riskFlags.push(`Zone inondable : ${p.floodZone}`);
+          if (p.landslideZone) riskFlags.push(`Glissement de terrain : ${p.landslideZone}`);
+          if (p.contaminatedSite) riskFlags.push(`Terrain contaminé (${p.contaminatedSiteMilieu || "—"})`);
+          if (p.inAgriculturalZone) riskFlags.push("Zone agricole protégée (CPTAQ)");
+          if (p.coastalErosionZone) riskFlags.push("Zone de contrainte (érosion côtière / mvt terrain)");
+
           return `
             <div class="gt-lp-collateral-card" data-property-id="${p.id}">
               ${typeof streetViewBlock === "function" ? streetViewBlock(p) : ""}
@@ -116,6 +126,18 @@ function renderLoanProfilePage(loan) {
                   <div><span style="color:var(--color-text-tertiary)">Valeur</span><strong>${fmtK(p.value || 0)}</strong></div>
                   <div><span style="color:var(--color-text-tertiary)">LTV</span><strong style="color:${ltvColor(lv)}">${lv}%</strong></div>
                 </div>
+
+                <div style="font-size:12px; color:var(--color-text-secondary); margin-top:10px; padding-top:10px; border-top:1px solid var(--color-border,#e2e2e2); line-height:1.7;">
+                  ${lotInfo.lotNumber ? `Lot ${lotInfo.lotNumber}` : ""}${lotInfo.lotNumber && lotInfo.matricule ? " · " : ""}${lotInfo.matricule ? `Matricule ${lotInfo.matricule}` : ""}${(lotInfo.lotNumber || lotInfo.matricule) && sqft ? " · " : ""}${sqft ? `${sqft.toLocaleString("fr-CA")} pi²` : ""}<br/>
+                  ${p.yearBuilt ? `Construit en ${p.yearBuilt}` : "Année de construction inconnue"}${p.constructionCode ? ` · ${p.constructionCode}` : ""}<br/>
+                  Terrain : <strong>${p.landValue ? fmtK(p.landValue) : "—"}</strong> · Bâtiment : <strong>${p.buildingValue ? fmtK(p.buildingValue) : "—"}</strong>${p.owner ? `<br/>Propriétaire : ${p.owner}` : ""}
+                </div>
+
+                ${riskFlags.length ? `
+                  <div style="font-size:11px; color:#B45309; background:rgba(180,83,9,0.08); border-radius:6px; padding:6px 8px; margin-top:8px;">
+                    ${riskFlags.map(f => `<div>⚠ ${f}</div>`).join("")}
+                  </div>
+                ` : ""}
               </div>
             </div>
           `;

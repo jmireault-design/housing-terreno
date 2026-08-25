@@ -5,6 +5,20 @@
                  résultat de RECHERCHE non enregistré (nouvelle adresse)
    ===================================================================== */
 
+// Filet de sécurité contre une année à 5-6 chiffres qu'un navigateur pourrait
+// laisser passer dans un champ <input type="date"> (l'attribut min/max ne
+// bloque pas toujours la frappe elle-même, selon le navigateur). Si l'année
+// dépasse 4 chiffres, on ignore la date plutôt que de sauvegarder une valeur
+// invalide.
+function sanitizeDateValue(value) {
+  if (!value) return value;
+  const match = value.match(/^(\d+)-(\d{2})-(\d{2})$/);
+  if (!match) return value;
+  const [, year, month, day] = match;
+  if (year.length > 4) return "";
+  return `${year.padStart(4, "0")}-${month}-${day}`;
+}
+
 // Immeuble actuellement affiché en Street View dans le panneau prêt.
 // (Utilisé quand un prêt a plusieurs immeubles pour permettre de changer.)
 let currentLoanSvPropertyId = null;
@@ -858,16 +872,36 @@ function renderLoanPanel(loan) {
   `;
 }
 
-// Une carte-résumé cliquable d'un immeuble à l'intérieur du panneau prêt
+// Suivi des immeubles actuellement en édition "en ligne" (dans la liste du prêt),
+// pour ne pas perdre cet état lors des re-rendus successifs du panneau.
+let inlineEditingCollateralIds = new Set();
+
+// Une carte-résumé cliquable d'un immeuble à l'intérieur du panneau prêt — affiche
+// tous les détails connus, avec un bouton "Modifier" pour éditer sans quitter le prêt.
 function renderCollateralItem(loan, x) {
   const p = x.property;
   const propLtv = propertyLtv(p, x.amount);
+
+  if (inlineEditingCollateralIds.has(p.id)) {
+    return renderCollateralEditForm(p);
+  }
+
+  const lotInfo = getLotInfo(p);
+  const sqft = p.lotAreaSqFt || (p.lotAreaSqM ? Math.round(p.lotAreaSqM * 10.7639) : 0);
+
+  const riskFlags = [];
+  if (p.floodZone) riskFlags.push(`Zone inondable : ${p.floodZone}`);
+  if (p.landslideZone) riskFlags.push(`Glissement de terrain : ${p.landslideZone}`);
+  if (p.contaminatedSite) riskFlags.push(`Terrain contaminé (${p.contaminatedSiteMilieu || "—"})`);
+  if (p.inAgriculturalZone) riskFlags.push("Zone agricole protégée (CPTAQ)");
+  if (p.coastalErosionZone) riskFlags.push("Zone de contrainte (érosion côtière / mvt terrain)");
+
   return `
     <div class="gt-linked-prop" data-property-id="${p.id}">
       <div class="gt-linked-prop-head">
         <div>
           <div class="gt-linked-prop-title">${p.addr}</div>
-          <div class="gt-linked-prop-sub">${p.city} • ${p.type}</div>
+          <div class="gt-linked-prop-sub">${p.neighborhood ? p.neighborhood + ", " : ""}${p.city} • ${p.type || "—"}</div>
         </div>
         <i class="ti ti-arrow-right" style="color:var(--color-text-tertiary)"></i>
       </div>
@@ -876,6 +910,77 @@ function renderCollateralItem(loan, x) {
         <div><label>Garanti</label><strong>${fmtK(x.amount)}</strong></div>
         <div><label>Rang</label><strong>${x.rank}</strong></div>
         <div><label>LTV part</label><strong style="color:${ltvColor(propLtv)}">${propLtv}%</strong></div>
+      </div>
+
+      <div style="font-size:12px; color:var(--color-text-secondary); margin-top:10px; padding-top:10px; border-top:1px solid var(--color-border,#e2e2e2); line-height:1.7;">
+        ${lotInfo.lotNumber ? `Lot ${lotInfo.lotNumber}` : ""}${lotInfo.lotNumber && lotInfo.matricule ? " · " : ""}${lotInfo.matricule ? `Matricule ${lotInfo.matricule}` : ""}${(lotInfo.lotNumber || lotInfo.matricule) && sqft ? " · " : ""}${sqft ? `${sqft.toLocaleString("fr-CA")} pi²` : ""}<br/>
+        ${p.yearBuilt ? `Construit en ${p.yearBuilt}` : "Année de construction inconnue"}${p.constructionCode ? ` · ${p.constructionCode}` : ""}<br/>
+        Terrain : <strong>${p.landValue ? fmtK(p.landValue) : "—"}</strong> · Bâtiment : <strong>${p.buildingValue ? fmtK(p.buildingValue) : "—"}</strong>${p.owner ? `<br/>Propriétaire : ${p.owner}` : ""}
+      </div>
+
+      ${riskFlags.length ? `
+        <div style="font-size:11px; color:#B45309; background:rgba(180,83,9,0.08); border-radius:6px; padding:6px 8px; margin-top:8px;">
+          ${riskFlags.map(f => `<div>⚠ ${f}</div>`).join("")}
+        </div>
+      ` : ""}
+
+      <button class="gt-secondary-btn gt-collateral-edit-btn" data-property-id="${p.id}" style="margin-top:10px; width:100%; font-size:12px; padding:6px;">
+        <i class="ti ti-pencil"></i> Modifier cet immeuble
+      </button>
+    </div>
+  `;
+}
+
+// Formulaire compact d'édition, affiché directement dans la carte à la place du
+// résumé — évite d'avoir à quitter la fiche du prêt pour corriger un détail.
+function renderCollateralEditForm(p) {
+  return `
+    <div class="gt-linked-prop" data-property-id="${p.id}" data-editing="true">
+      <div class="gt-linked-prop-title" style="margin-bottom:10px;">Modifier — ${p.addr}</div>
+
+      <div class="gt-new-prop-form">
+        <label>Type
+          <select class="ce-field" data-field="type">
+            <option value="">—</option>
+            ${CONFIG.options.propertyTypes.map(t => `<option value="${t}" ${t === p.type ? "selected" : ""}>${t}</option>`).join("")}
+          </select>
+        </label>
+        <label>Ville
+          <input class="ce-field" data-field="city" type="text" value="${p.city || ""}" />
+        </label>
+        <label>Quartier
+          <input class="ce-field" data-field="neighborhood" type="text" value="${p.neighborhood || ""}" placeholder="Optionnel" />
+        </label>
+        <label>Année de construction
+          <input class="ce-field" data-field="yearBuilt" type="text" inputmode="numeric" value="${p.yearBuilt || ""}" placeholder="Ex. 1985" />
+        </label>
+        <label>Genre de construction
+          <select class="ce-field" data-field="constructionCode">
+            <option value="">—</option>
+            ${CONFIG.options.constructionTypes.map(t => `<option value="${t}" ${t === p.constructionCode ? "selected" : ""}>${t}</option>`).join("")}
+          </select>
+        </label>
+        <label>Propriétaire
+          <input class="ce-field" data-field="owner" type="text" value="${p.owner || ""}" placeholder="Nom" />
+        </label>
+        <label>Terrain ($)
+          <input class="ce-field ce-num" data-field="landValue" type="text" inputmode="numeric" value="${formatNumberWithCommas(p.landValue || 0)}" />
+        </label>
+        <label>Bâtiment ($)
+          <input class="ce-field ce-num" data-field="buildingValue" type="text" inputmode="numeric" value="${formatNumberWithCommas(p.buildingValue || 0)}" />
+        </label>
+        <label>Valeur estimée ($)
+          <input class="ce-field ce-num" data-field="value" type="text" inputmode="numeric" value="${formatNumberWithCommas(p.value || 0)}" />
+        </label>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="gt-save-btn gt-collateral-save-btn" data-property-id="${p.id}" style="flex:1;">
+          <i class="ti ti-check"></i> Enregistrer
+        </button>
+        <button class="gt-secondary-btn gt-collateral-cancel-btn" data-property-id="${p.id}" style="flex:1;">
+          Annuler
+        </button>
       </div>
     </div>
   `;
@@ -1053,7 +1158,7 @@ function renderLoanEditForm(loan) {
     <div class="gt-section-title">Dates</div>
     <div class="gt-new-prop-form">
       <label>Date de début
-        <input id="edit-startDate" type="date" value="${loan.startDate || ""}" />
+        <input id="edit-startDate" type="date" min="1900-01-01" max="2100-12-31" value="${loan.startDate || ""}" />
       </label>
       <label>Échéance (en mois)
         <input id="edit-termMonths" type="number" step="1" value="${loan.termMonths || ""}" placeholder="Ex. 12" />
@@ -1065,7 +1170,7 @@ function renderLoanEditForm(loan) {
         <input id="edit-minInterestMonths" type="number" step="1" value="${loan.minInterestMonths || ""}" placeholder="Ex. 6" />
       </label>
       <label>Échéance contractuelle
-        <input id="edit-maturity" type="date" value="${loan.maturity || ""}" />
+        <input id="edit-maturity" type="date" min="1900-01-01" max="2100-12-31" value="${loan.maturity || ""}" />
       </label>
       <label>Fin anticipée
         <input id="edit-earlyEndDate" type="date" value="${loan.earlyEndDate || ""}" />
@@ -1234,11 +1339,11 @@ function attachLoanEditHandlers(loan) {
   document.getElementById("save-loan-edit").onclick = () => {
     loan.status = document.getElementById("edit-status").value;
     loan.risk = document.getElementById("edit-risk").value;
-    loan.startDate = document.getElementById("edit-startDate").value;
+    loan.startDate = sanitizeDateValue(document.getElementById("edit-startDate").value);
     loan.termMonths = Number(document.getElementById("edit-termMonths").value) || null;
     loan.minTermEndDate = document.getElementById("edit-minTermEndDate").value;
     loan.minInterestMonths = Number(document.getElementById("edit-minInterestMonths").value) || null;
-    loan.maturity = document.getElementById("edit-maturity").value;
+    loan.maturity = sanitizeDateValue(document.getElementById("edit-maturity").value);
     loan.earlyEndDate = document.getElementById("edit-earlyEndDate").value;
     loan.principal = Number(document.getElementById("edit-principal").value) || 0;
     loan.balance = Number(document.getElementById("edit-balance").value) || 0;
@@ -1677,8 +1782,54 @@ function attachLoanPanelHandlers(loan) {
   // Cliquer sur un immeuble en garantie → ouvrir le panneau immeuble
   document.querySelectorAll(".gt-linked-prop").forEach(el => {
     el.addEventListener("click", () => {
+      if (el.dataset.editing === "true") return; // en édition : le clic sur la carte ne navigue pas
       const propId = el.dataset.propertyId;
       selectProperty(propId);
+    });
+  });
+
+  // Édition en ligne d'un immeuble en garantie, sans quitter la fiche du prêt
+  document.querySelectorAll(".gt-collateral-edit-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      inlineEditingCollateralIds.add(btn.dataset.propertyId);
+      renderPanel();
+    });
+  });
+  document.querySelectorAll(".gt-collateral-cancel-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      inlineEditingCollateralIds.delete(btn.dataset.propertyId);
+      renderPanel();
+    });
+  });
+  document.querySelectorAll(".gt-collateral-save-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const propId = btn.dataset.propertyId;
+      const p = state.propertyMap[propId];
+      if (!p) return;
+      const card = btn.closest(".gt-linked-prop");
+
+      card.querySelectorAll(".ce-field").forEach(field => {
+        const key = field.dataset.field;
+        if (field.classList.contains("ce-num")) {
+          p[key] = parseFormattedNumber(field.value);
+        } else if (key === "yearBuilt") {
+          p[key] = parseInt(field.value, 10) || p.yearBuilt || null;
+        } else {
+          p[key] = field.value.trim();
+        }
+      });
+
+      inlineEditingCollateralIds.delete(propId);
+      buildIndexes();
+      if (typeof populatePortfolioFilters === "function") populatePortfolioFilters();
+      if (typeof populateMapTypeChips === "function") populateMapTypeChips();
+      refreshMap();
+      renderPanel();
+      if (typeof renderPortfolio === "function") renderPortfolio();
+      if (typeof renderDashboard === "function") renderDashboard();
     });
   });
 

@@ -140,7 +140,7 @@ button, .gt-tab, .gt-subtab, .gt-chip, .gt-style-toggle button,
 .gt-new-prop-form input:focus,
 .gt-new-prop-form select:focus {
   outline: none;
-  border-color: var(--color-brand-blue, #2277B5);
+  border-color: #2277B5;
 }
 
 /* Halo pulsant marquant l'emplacement recherché (immeuble existant ou nouvelle adresse) */
@@ -205,8 +205,8 @@ button, .gt-tab, .gt-subtab, .gt-chip, .gt-style-toggle button,
   filter: brightness(0.97);
 }
 .gt-parcel-toggle button.active {
-  background: var(--color-brand-blue, #2277B5);
-  border-color: var(--color-brand-blue, #2277B5);
+  background: #2277B5;
+  border-color: #2277B5;
   color: white;
 }
 
@@ -392,15 +392,30 @@ body.dark-theme textarea:disabled {
   color: #8A8F9B;
 }
 
+.gt-chip {
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  transition: transform 0.1s ease, background-color 0.15s ease;
+}
+.gt-chip:hover {
+  transform: translateY(-1px);
+}
+.gt-chip.active {
+  background: #2277B5 !important;
+  color: #FFFFFF !important;
+  border-color: #2277B5 !important;
+  font-weight: 700 !important;
+}
+
 body.dark-theme .gt-chip {
   background: #1F232C;
   color: var(--color-text-secondary);
   border-color: #2A2F3A;
 }
 body.dark-theme .gt-chip.active {
-  background: #534AB7;
-  color: #fff;
-  border-color: #534AB7;
+  background: #2277B5 !important;
+  color: #FFFFFF !important;
+  border-color: #2277B5 !important;
 }
 
 body.dark-theme .gt-secondary-btn {
@@ -421,12 +436,20 @@ body.dark-theme .gt-style-toggle button {
   color: var(--color-text-secondary);
 }
 body.dark-theme .gt-style-toggle button.active {
-  background: #534AB7;
+  background: #2277B5;
   color: #fff;
 }
 
+table th {
+  color: #FFFFFF !important;
+  background: #2277B5 !important;
+  font-weight: 800 !important;
+}
+
 body.dark-theme table th {
-  color: var(--color-text-tertiary);
+  color: #FFFFFF;
+  background: #171A21;
+  font-weight: 800;
   border-color: #2A2F3A;
 }
 body.dark-theme table td {
@@ -640,7 +663,7 @@ td, .gt-bar-val, .gt-linked-loan-stats strong, .gt-linked-prop-stats strong {
 .gt-new-prop-form select:not(:disabled):focus,
 .gt-new-prop-form textarea:not(:disabled):focus {
   outline: none;
-  border-color: var(--color-brand-blue, #2277B5);
+  border-color: #2277B5;
   box-shadow: 0 0 0 3px rgba(34, 119, 181, 0.15);
 }
 
@@ -710,7 +733,7 @@ body.dark-theme select[disabled] {
 
 .gt-badge-accent {
   background: rgba(34, 119, 181, 0.12);
-  color: var(--color-brand-blue);
+  color: #2277B5;
 }
 body.dark-theme .gt-badge-accent {
   background: rgba(34, 119, 181, 0.22);
@@ -723,7 +746,7 @@ body.dark-theme .gt-badge-accent {
   gap: 7px;
   flex-shrink: 0;
   padding: 9px 16px;
-  background: var(--color-brand-blue);
+  background: #2277B5;
   color: #FFFFFF;
   border: none;
   border-radius: var(--radius-md, 8px);
@@ -797,7 +820,7 @@ body.dark-theme .gt-section-title {
 .gt-notes-editable:focus {
   outline: none;
   background: #FFFFFF;
-  border-color: var(--color-brand-blue, #2277B5);
+  border-color: #2277B5;
   box-shadow: 0 0 0 3px rgba(34, 119, 181, 0.15);
 }
 .gt-notes-editable::placeholder {
@@ -1004,7 +1027,7 @@ select.gt-inline-edit {
 .gt-inline-edit:focus {
   outline: none;
   background: #FFFFFF;
-  border-color: var(--color-brand-blue, #2277B5);
+  border-color: #2277B5;
   box-shadow: 0 0 0 2px rgba(34, 119, 181, 0.15);
   cursor: text;
 }
@@ -1157,7 +1180,7 @@ body.dark-theme #props-body::-webkit-scrollbar-thumb {
 }
 .gt-settings-add-input:focus {
   outline: none;
-  border-color: var(--color-brand-blue, #2277B5);
+  border-color: #2277B5;
   box-shadow: 0 0 0 3px rgba(34, 119, 181, 0.15);
 }
 
@@ -1268,7 +1291,7 @@ body.dark-theme .gt-flood-legend {
 .gt-layers-dropdown-item input[type="checkbox"] {
   width: 15px;
   height: 15px;
-  accent-color: var(--color-brand-blue, #2277B5);
+  accent-color: #2277B5;
   cursor: pointer;
 }
 
@@ -1477,3 +1500,95 @@ body.dark-theme .gt-lp-stat-card,
 body.dark-theme .gt-lp-notes-box { background: #1F232C; }
 body.dark-theme .gt-lp-collateral-card { background: #171A21; border-color: #2A2F3A; }
 body.dark-theme .gt-lp-collateral-stats { border-top-color: #2A2F3A; }
+
+/* =====================================================================
+   Correction : la barre de recherche (Mapbox Geocoder) perd ses coins
+   arrondis en mode sombre — on force le même arrondi qu'en mode clair.
+   ===================================================================== */
+body.dark-theme .mapboxgl-ctrl-geocoder {
+  border-radius: var(--radius-lg, 12px) !important;
+  overflow: hidden;
+}
+
+/* =====================================================================
+   Boutons Standard / Rues / Épuré / Satellite en bleu quand sélectionnés,
+   en mode clair aussi (pas seulement en mode sombre).
+   ===================================================================== */
+.gt-style-toggle button.active {
+  background: #2277B5 !important;
+  color: #FFFFFF !important;
+}
+
+/* Contour bleu sur l'onglet actif en haut à droite (Carte, Portfolio,
+   Tableau de bord, Taux) — mode clair et sombre. */
+.gt-tab.active {
+  box-shadow: inset 0 0 0 2px #2277B5;
+}
+body.dark-theme .gt-tab.active {
+  box-shadow: inset 0 0 0 2px #2277B5;
+}
+
+/* =====================================================================
+   Barre bleue pour les titres de section du menu de filtres (Statut,
+   Ville, Type, Vue, Prêteur, Rang, Type de prêt, Compteur), même
+   traitement que les en-têtes de tableau du Portfolio.
+   ===================================================================== */
+.gt-filter-title {
+  background: #2277B5 !important;
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 5px 8px !important;
+  border-radius: 5px !important;
+  margin: 10px 0 6px !important;
+  display: block;
+}
+
+/* =====================================================================
+   Amélioration de l'espacement / UX du menu de filtres (carte, colonne
+   de gauche) — sections mieux séparées, bulles plus respirables.
+   ===================================================================== */
+.gt-filters {
+  padding: 4px 2px;
+}
+.gt-filter-title {
+  margin-top: 10px !important;
+}
+.gt-filter-title:first-of-type {
+  margin-top: 2px !important;
+}
+.gt-filters > div:not(.gt-filter-title) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 0;
+}
+.gt-chip {
+  padding: 4px 10px !important;
+  font-size: 11.5px;
+  line-height: 1.2;
+}
+
+/* =====================================================================
+   Un peu moins d'espace vertical dans la barre du haut (logo + onglets)
+   ===================================================================== */
+.gt-tabs {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+
+/* =====================================================================
+   Correction : les cartes du tableau de bord (grille CSS) s'étirent par
+   défaut pour correspondre à la hauteur de la plus grande carte de leur
+   ligne — ce qui laissait un grand espace vide sous le calendrier des
+   prêts (peu de contenu) quand une carte voisine était plus haute.
+   Chaque carte garde maintenant sa propre hauteur naturelle.
+   ===================================================================== */
+.gt-dash-grid {
+  align-items: start !important;
+}
+.gt-card-wide {
+  height: auto !important;
+}
