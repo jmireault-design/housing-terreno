@@ -18,6 +18,7 @@ function openLoanProfilePage(loanId) {
   window.scrollTo(0, 0);
 
   wireLoanProfilePage(loan);
+  if (typeof renderStreetViewPanoramas === "function") renderStreetViewPanoramas();
 }
 
 function closeLoanProfilePage() {

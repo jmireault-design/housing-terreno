@@ -2192,6 +2192,102 @@ function renderPropertyBubbles() {
 }
 
 
+/* =====================================================================
+   Popup de prévisualisation au clic sur un immeuble/lot (photo + adresse +
+   stats rapides + bouton "Voir" qui ouvre le panneau latéral complet).
+   ===================================================================== */
+let activePropertyPreviewPopup = null;
+
+function propertyPreviewPhotoUrl(p) {
+  if (!hasGoogleKey()) return null;
+  return `https://www.google.com/maps/embed/v1/streetview?key=${CONFIG.googleKey}&location=${p.lat},${p.lng}&fov=90`;
+}
+
+function showPropertyPreviewPopup(p, lngLat) {
+  if (activePropertyPreviewPopup) activePropertyPreviewPopup.remove();
+
+  const photoUrl = propertyPreviewPhotoUrl(p);
+  const sqft = p.lotAreaSqFt || (p.lotAreaSqM ? Math.round(p.lotAreaSqM * 10.7639) : 0);
+  const subtitle = [p.neighborhood, p.city].filter(Boolean).join(", ") || p.city || "";
+
+  const statRow = (icon, label, value) => `
+    <div style="display:flex; align-items:center; gap:8px;">
+      <div style="width:34px; height:34px; border-radius:9px; background:#EAF6F1; display:flex; align-items:center; justify-content:center; flex:0 0 auto;">
+        <i class="ti ${icon}" style="color:#1D9E75; font-size:16px;"></i>
+      </div>
+      <div style="font-size:12px; line-height:1.3;">
+        <div style="color:var(--color-text-tertiary,#8A8A85);">${label}</div>
+        <div style="font-weight:600; color:var(--color-text-primary,#1a1a1a);">${value || "—"}</div>
+      </div>
+    </div>
+  `;
+
+  const html = `
+    <div style="width:280px; font-family:var(--font-sans, sans-serif); border-radius:16px; overflow:hidden; background:#fff;">
+      <div style="position:relative; height:150px; background:#E8E7E2;">
+        ${photoUrl
+          ? `<iframe class="gt-sv-frame" data-lat="${p.lat}" data-lng="${p.lng}" src="${photoUrl}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allow="accelerometer; gyroscope" style="width:100%; height:100%; border:0; display:block;"></iframe>`
+          : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#B5B4AE;"><i class="ti ti-photo-off" style="font-size:28px;"></i></div>`}
+        <span style="position:absolute; top:10px; left:10px; background:rgba(255,255,255,0.95); padding:5px 12px; border-radius:999px; font-size:12px; font-weight:700;">${p.type || "Immeuble"}</span>
+        <button class="gt-preview-close" style="position:absolute; top:10px; right:10px; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,0.55); border:none; color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+          <i class="ti ti-x" style="font-size:15px;"></i>
+        </button>
+      </div>
+      <div style="padding:14px 16px 16px;">
+        <div style="font-size:15px; font-weight:700; color:var(--color-text-primary,#1a1a1a);">${p.addr}</div>
+        <div style="font-size:12px; color:var(--color-text-tertiary,#8A8A85); margin-top:2px;">${subtitle}</div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px;">
+          ${statRow("ti-calendar", "Construction", p.yearBuilt)}
+          ${statRow("ti-stairs", "Genre", p.constructionCode)}
+          ${statRow("ti-ruler-2", "Terrain", sqft ? `${sqft.toLocaleString("fr-CA")} pi²` : "")}
+          ${statRow("ti-cash", "Valeur", p.value ? fmtK(p.value) : "")}
+        </div>
+
+        <button class="gt-preview-voir-btn" style="width:100%; margin-top:14px; background:#1a1a1a; color:#fff; border:none; border-radius:999px; padding:12px; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;">
+          Voir <i class="ti ti-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  `;
+
+  const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, maxWidth: "300px", offset: 16 })
+    .setLngLat(lngLat)
+    .setHTML(html)
+    .addTo(map);
+
+  activePropertyPreviewPopup = popup;
+  if (typeof renderStreetViewPanoramas === "function") renderStreetViewPanoramas();
+
+  const el = popup.getElement();
+  const closeBtn = el.querySelector(".gt-preview-close");
+  if (closeBtn) closeBtn.addEventListener("click", () => popup.remove());
+
+  const voirBtn = el.querySelector(".gt-preview-voir-btn");
+  if (voirBtn) {
+    voirBtn.addEventListener("click", () => {
+      popup.remove();
+      if (p.id) {
+        selectProperty(p.id);
+      } else {
+        // Lot pas encore enregistré comme immeuble — on ouvre quand même le
+        // panneau avec les infos déjà connues, comme selectParcelResult().
+        clearCollateralHighlights();
+        clearSearchHighlight();
+        state.selectedType = "search";
+        state.selectedId = null;
+        state.editing = false;
+        state.searchResult = p;
+        renderPanel();
+      }
+    });
+  }
+
+  popup.on("close", () => {
+    if (activePropertyPreviewPopup === popup) activePropertyPreviewPopup = null;
+  });
+}
+
 function selectProperty(id) {
   clearCollateralHighlights();
   clearSearchHighlight();

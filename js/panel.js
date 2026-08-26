@@ -23,20 +23,36 @@ function sanitizeDateValue(value) {
 // (Utilisé quand un prêt a plusieurs immeubles pour permettre de changer.)
 let currentLoanSvPropertyId = null;
 
+/* ---------- Boutons "Itinéraire" (Apple Maps + Google Maps — liens universels,
+   fonctionnent sans clé API, ouvrent l'app native sur mobile ou le site sur desktop) ---------- */
+function directionsButtonHtml(p) {
+  const name = encodeURIComponent(p.addr || "Propriété");
+  return `
+    <a class="gt-sv-btn" href="https://maps.apple.com/?daddr=${p.lat},${p.lng}&dirflg=d&q=${name}"
+       target="_blank" rel="noopener">
+      <i class="ti ti-route"></i> Itinéraire (Apple)
+    </a>
+    <a class="gt-sv-btn" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=driving"
+       target="_blank" rel="noopener">
+      <i class="ti ti-route"></i> Itinéraire (Google)
+    </a>`;
+}
+
 /* ---------- Street View ---------- */
 function streetViewBlock(p) {
   if (hasGoogleKey()) {
-    const url = `https://www.google.com/maps/embed/v1/streetview?key=${CONFIG.googleKey}&location=${p.lat},${p.lng}&heading=0&pitch=0&fov=90`;
+    const domId = `gt-sv-pano-${(p.id || `${p.lat}_${p.lng}`).toString().replace(/[^a-zA-Z0-9_]/g, "")}`;
     return `
       <div class="gt-sv-wrap">
-        <iframe loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-                src="${url}" allow="accelerometer; gyroscope"
-                title="Street View de ${p.addr}"></iframe>
+        <div class="gt-sv-panorama" id="${domId}" data-lat="${p.lat}" data-lng="${p.lng}" data-addr="${p.addr || ""}">
+          <div class="gt-sv-loading"><i class="ti ti-loader-2"></i> Chargement du Street View…</div>
+        </div>
         <div class="gt-sv-actions">
           <a class="gt-sv-btn" href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${p.lat},${p.lng}"
              target="_blank" rel="noopener">
             <i class="ti ti-external-link"></i> Ouvrir
           </a>
+          ${directionsButtonHtml(p)}
         </div>
       </div>`;
   }
@@ -50,8 +66,101 @@ function streetViewBlock(p) {
            target="_blank" rel="noopener">
           <i class="ti ti-external-link"></i> Voir sur google.com
         </a>
+        ${directionsButtonHtml(p)}
       </div>
     </div>`;
+}
+
+/* ---------- Street View interactif via le SDK JavaScript de Google ----------
+   L'ancienne approche (iframe Embed API + fetch() vers l'API Metadata pour
+   calculer l'angle) se faisait bloquer silencieusement par la politique CORS
+   du navigateur — les "static web APIs" de Google ne sont pas conçues pour être
+   appelées en fetch() depuis le client. On utilise plutôt le SDK JS (déjà chargé
+   pour Mapbox n'a pas d'équivalent ici, mais l'API "Maps JavaScript API" est déjà
+   activée sur ta clé) : StreetViewService nous donne la VRAIE position de la
+   photosphère directement dans son callback — pas de requête réseau séparée,
+   donc pas de souci CORS — et on calcule l'angle exact vers la maison à partir
+   de cette position réelle. */
+function bearingBetween(lat1, lng1, lat2, lng2) {
+  const toRad = d => (d * Math.PI) / 180;
+  const toDeg = r => (r * 180) / Math.PI;
+  const phi1 = toRad(lat1), phi2 = toRad(lat2);
+  const dLambda = toRad(lng2 - lng1);
+  const y = Math.sin(dLambda) * Math.cos(phi2);
+  const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLambda);
+  return (toDeg(Math.atan2(y, x)) + 360) % 360;
+}
+
+let googleMapsSdkStatus = "idle"; // "idle" | "loading" | "ready"
+let googleMapsSdkQueue = [];
+
+function ensureGoogleMapsSdk(callback) {
+  if (googleMapsSdkStatus === "ready") { callback(); return; }
+  googleMapsSdkQueue.push(callback);
+  if (googleMapsSdkStatus === "loading") return;
+
+  googleMapsSdkStatus = "loading";
+  window.__onGoogleMapsSdkLoaded = () => {
+    googleMapsSdkStatus = "ready";
+    googleMapsSdkQueue.forEach(cb => cb());
+    googleMapsSdkQueue = [];
+  };
+  const script = document.createElement("script");
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${CONFIG.googleKey}&callback=__onGoogleMapsSdkLoaded`;
+  script.async = true;
+  script.onerror = () => console.warn("Terreno: échec du chargement du SDK Google Maps.");
+  document.head.appendChild(script);
+}
+
+function renderStreetViewPanoramas() {
+  if (!hasGoogleKey()) return;
+  const containers = document.querySelectorAll(".gt-sv-panorama:not([data-initialized])");
+  if (!containers.length) return;
+
+  ensureGoogleMapsSdk(() => {
+    const streetViewService = new google.maps.StreetViewService();
+
+    containers.forEach(container => {
+      // Le panneau peut avoir été fermé/changé pendant le chargement du SDK.
+      if (!document.body.contains(container)) return;
+      container.setAttribute("data-initialized", "1"); // jamais retraité deux fois
+
+      const lat = parseFloat(container.dataset.lat);
+      const lng = parseFloat(container.dataset.lng);
+      const addr = container.dataset.addr;
+      if (!lat || !lng) return;
+
+      streetViewService.getPanorama({ location: { lat, lng }, radius: 75, source: google.maps.StreetViewSource.OUTDOOR }, (data, status) => {
+        if (!document.body.contains(container)) return;
+
+        if (status !== google.maps.StreetViewStatus.OK || !data || !data.location) {
+          container.innerHTML = `
+            <div class="gt-sv-placeholder">
+              <i class="ti ti-camera-off"></i>
+              <div><strong>Aucun Street View disponible</strong></div>
+              <div>${addr || "à cette adresse"}</div>
+            </div>`;
+          return;
+        }
+
+        const panoLat = data.location.latLng.lat();
+        const panoLng = data.location.latLng.lng();
+        const heading = bearingBetween(panoLat, panoLng, lat, lng);
+
+        new google.maps.StreetViewPanorama(container, {
+          pano: data.location.pano,
+          pov: { heading, pitch: 0 },
+          zoom: 0.8,
+          addressControl: false,
+          fullscreenControl: false,
+          motionTrackingControl: false,
+          panControl: true,
+          zoomControl: true,
+          linksControl: true
+        });
+      });
+    });
+  });
 }
 
 /* ---------- Barre d'actions carte (Google Maps + Street View) ---------- */
@@ -1585,6 +1694,7 @@ function renderPanel() {
       panel.innerHTML = renderPropertyPanel(p);
       attachPropertyPanelHandlers(p);
     }
+    renderStreetViewPanoramas();
     return;
   }
 
@@ -1598,6 +1708,7 @@ function renderPanel() {
       panel.innerHTML = renderLoanPanel(loan);
       attachLoanPanelHandlers(loan);
     }
+    renderStreetViewPanoramas();
     return;
   }
 
@@ -1606,6 +1717,7 @@ function renderPanel() {
     if (!p) return;
     panel.innerHTML = renderSearchPanel(p);
     attachSearchPanelHandlers(p);
+    renderStreetViewPanoramas();
     return;
   }
 }
