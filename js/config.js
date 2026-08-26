@@ -82,8 +82,17 @@ const CONFIG = {
   // jour rare, donc figé en tileset comme les autres couches de risque.
   // Laisser id vide pour désactiver la couche (fichier non encore uploadé).
   wildfireRegimeTileset: {
-    id: "",
+    id: "jmireault.f7rep9",
     sourceLayer: "wildfire_regime"
+  },
+
+  // Labels de numéros civiques (adresses), pour les secteurs où le style Mapbox
+  // Standard n'en affiche pas assez (rive-nord/rive-sud). Généré municipalité par
+  // municipalité (ex: download_laval_addresses.py) + tippecanoe, un tileset combiné
+  // au fur et à mesure que d'autres villes s'ajoutent. Laisser id vide pour désactiver.
+  addressLabelsTileset: {
+    id: "jmireault.5quujx",
+    sourceLayer: "addresses"
   },
 
   // Mesures préventives feux de forêt (IFCO/ICAF/RTF) émises par la SOPFEU/MSP.

@@ -89,6 +89,7 @@ function initMap() {
     setupCoastalErosionLayer();
     setupWildfireRegimeLayer();
     setupFireRestrictionLayer();
+    setupAddressLabelsLayer();
     setupMetroLayer();
     setupTrainLayer();
     setupBusStopsLayer();
@@ -484,6 +485,38 @@ async function fetchWildfireRegimeStatus(lng, lat) {
   const props = await tilequeryLookup(CONFIG.wildfireRegimeTileset.id, lng, lat);
   if (!props) return null;
   return { zone: props.zone_nom || props.ZONE || "", regime: props.regime || props.REGIME || "" };
+}
+
+/* ---------- Labels de numéros civiques (rive-nord/rive-sud — zones où le style
+   Mapbox Standard n'affiche pas assez d'adresses natives) ---------- */
+function setupAddressLabelsLayer() {
+  if (!CONFIG.addressLabelsTileset || !CONFIG.addressLabelsTileset.id) return;
+  if (map.getLayer("gt-address-labels")) return;
+
+  map.addSource("gt-address-labels", {
+    type: "vector",
+    url: `mapbox://${CONFIG.addressLabelsTileset.id}`
+  });
+
+  map.addLayer({
+    id: "gt-address-labels",
+    type: "symbol",
+    source: "gt-address-labels",
+    "source-layer": CONFIG.addressLabelsTileset.sourceLayer,
+    minzoom: 17,
+    layout: {
+      "text-field": ["get", "civique"],
+      "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+      "text-size": 11,
+      "text-anchor": "center",
+      "text-allow-overlap": false
+    },
+    paint: {
+      "text-color": "#3A3A3A",
+      "text-halo-color": "rgba(255,255,255,0.9)",
+      "text-halo-width": 1.3
+    }
+  });
 }
 
 /* ---------- Mesures préventives feux de forêt actives (IFCO/ICAF/RTF — SOPFEU/MSP) ----------
@@ -2333,6 +2366,7 @@ function setMapStyle(styleKey) {
     setupCoastalErosionLayer();
     setupWildfireRegimeLayer();
     setupFireRestrictionLayer();
+    setupAddressLabelsLayer();
     setupMetroLayer();
     setupTrainLayer();
     setupBusStopsLayer();
