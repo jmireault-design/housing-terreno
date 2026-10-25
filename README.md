@@ -1,132 +1,50 @@
-# Terreno
+# Terreno — carte des garanties + Finances
 
-Suivi cartographique de prêts garantis par immeubles. Chaque prêt peut être garanti par **plusieurs immeubles**, et chaque immeuble peut garantir **plusieurs prêts** (relation N:N). Le tout visible sur une carte, avec un portfolio à deux onglets (Prêts / Immeubles) et un tableau de bord de risque.
+Ce dossier est le dépôt **housing-terreno** (commit « 13th Commit ») auquel on a greffé **Terreno Finances** (version du 25 oct. 2026). Les deux outils vivent dans la même page : la carte Terreno à gauche, les finances à droite, et des liens dans les deux sens.
 
-## Structure du projet
+## Déployer
 
-```
-terreno/
-├── index.html              Balisage
-├── README.md
-│
-├── css/
-│   └── styles.css
-│
-├── data/
-│   ├── properties.json     Immeubles physiques
-│   └── loans.json          Prêts + collatéral (liaison prêt↔immeuble)
-│
-└── js/
-    ├── config.js           Clés API, statuts, options
-    ├── format.js           fmtK, ltv, calculs
-    ├── state.js            État central + index dérivés
-    ├── data.js             Chargement JSON + construction des index
-    ├── panel.js            Panneau : immeuble (montre prêts) / prêt (montre immeubles)
-    ├── map.js              Mapbox, clustering, cadrage multi-immeubles
-    ├── portfolio.js        Deux sous-onglets Prêts / Immeubles
-    ├── dashboard.js        Métriques basées sur les prêts (pas de double-comptage)
-    └── app.js              Initialisation
-```
+Même procédure qu'avant : pousser sur GitHub → Vercel (`middleware.js` garde la protection par mot de passe), ou Live Server sur `index.html`. Une connexion Internet est nécessaire (tuiles Mapbox, Google Street View, polices).
 
-## Modèle de données
+Pour fusionner dans ton dépôt : copie tout le dossier par-dessus. Tes fichiers d'origine sont intacts sauf `index.html` (remplacé). Fichiers ajoutés : `css/finances.css`, `css/app.css`, `js/finances.js`, `js/bridge.js`, `js/layout.js`, `data/seed.js`.
 
-### `data/properties.json` — les immeubles physiques
-Un immeuble n'a pas de statut ni de garantie propre. Il porte seulement ses caractéristiques physiques et de valeur.
+**Important** : les données de la carte (immeubles et prêts ajoutés depuis l'app) sont dans le `localStorage` de ton navigateur, par origine (`housing-terreno.vercel.app`). En déployant sur le même projet Vercel, tu les retrouves. Les données Finances se chargent une première fois depuis `data/seed.js` (le classeur) : ouvre ensuite ton `finances.json` / `terreno.json` dans **Configuration → Ouvrir un fichier** pour reprendre tes transactions.
 
-```json
-{
-  "id": "P001",
-  "addr": "4521 Rue Saint-Denis",
-  "city": "Montréal",
-  "type": "Duplex",
-  "owner": "Marc Tremblay",
-  "value": 1240000,
-  "lng": -73.5772,
-  "lat": 45.5310
-}
-```
+## Disposition
 
-### `data/loans.json` — les prêts + leur collatéral
-Chaque prêt contient sa propre liste d'immeubles qui le garantissent (`collateral`), avec le montant garanti sur chaque immeuble et le rang de la garantie.
+- Boutons **Carte / Divisé / Finances** en haut à droite; poignée entre les deux colonnes pour ajuster la largeur (sur téléphone : Carte ou Finances, bouton flottant ⌖).
+- À gauche, tout Terreno tel quel : Carte (filtres, lots, municipalités, risques, transport, Street View, recherche d'adresse ou de lot), Portfolio, Tableau de bord, Taux, Paramètres.
+- À droite, tout Terreno Finances : Tableau de bord, Opérations, Prêts, Dossiers et immeubles, États financiers, Prévisions, Outils, Configuration.
+- Un seul bouton de thème (Auto / Clair / Sombre) pilote les deux côtés.
 
-```json
-{
-  "id": "L001",
-  "borrower": "Valérie Parisé",
-  "lender": "Prêt privé — Jonathan Mireault",
-  "principal": 325000,
-  "balance": 318000,
-  "rate": 8.50,
-  "maturity": "2027-06-15",
-  "status": "active",
-  "risk": "Medium",
-  "docs": { ... },
-  "collateral": [
-    { "propertyId": "P008", "amount": 150000, "rank": "First rank" },
-    { "propertyId": "P013", "amount": 100000, "rank": "Second rank" },
-    { "propertyId": "P003", "amount": 75000,  "rank": "Second rank" }
-  ]
-}
-```
+## Une seule source pour les dossiers et les immeubles
 
-### Comment ça se traduit dans l'UI
+Les **dossiers** et les **immeubles** sont ceux de la carte (`data/loans.json`, `data/properties.json` + modifications locales). L'onglet **Dossiers et immeubles** de Finances les affiche directement; pour les modifier, on passe par la carte (bouton *Modifier* → panneau Terreno). L'ancien import/export JSON entre les deux outils n'a plus de raison d'être.
 
-- **Carte** : chaque pin = un immeuble. La couleur du pin reflète le statut du prêt le plus "chaud" qui le grève. Cliquer un pin ouvre le panneau qui liste **tous les prêts** sur cet immeuble.
-- **Panneau prêt** : montre les 1-N immeubles en garantie. Un bouton « Cadrer les X immeubles sur la carte » ajuste automatiquement le zoom pour tous les afficher ensemble.
-- **Portfolio → Prêts** : liste des prêts (celui de Valérie Parisé avec 3 immeubles apparaît avec « 3 » dans la colonne Immeubles).
-- **Portfolio → Immeubles** : liste des immeubles, avec le total garanti et le nombre de prêts sur chacun. L'immeuble de Carlos Mendes (P008) apparaît avec 2 prêts (L001 + L013).
-- **Dashboard** : les métriques sont basées sur les prêts pour éviter le double-comptage. Un immeuble qui garantit 2 prêts n'est compté qu'une fois dans « immeubles impliqués ».
+Le lien avec un prêt Finances se fait par le **n° de dossier** : le prêt `L016` de la carte est le dossier n° 16, relié au prêt Finances dont le champ « N° de dossier » vaut 16.
 
-## Lancer localement
+## Liens carte ↔ finances
 
-Il faut un serveur local (fetch ne fonctionne pas en `file://`).
+| Depuis | Action | Résultat |
+| --- | --- | --- |
+| Carte | clic sur un immeuble | panneau Terreno + bloc **Finances** (capital garanti, LTV, intérêt mensuel, arriérés, prêt relié et statut du dernier mois dû) |
+| Carte | ouverture d'un prêt (panneau ou page de profil) | bloc **Finances** : solde au grand livre, dernier mois dû, arriérés, intérêts de l'année, bande des 12 derniers mois; boutons *Ouvrir dans Finances*, *Paiement reçu*, *État de compte* |
+| Carte | pins et filtre « Paiement en retard » | un immeuble dont un prêt Finances a un mois en retard passe en rouge foncé, quel que soit son statut sur la carte |
+| Finances › Prêts | ouverture d'un prêt | la carte cadre ses immeubles en garantie et ouvre le panneau du dossier; encadré « Dossier Terreno » dans le prêt (contact, prêteurs, taux, terme, immeubles, lots, matricules) |
+| Finances › Dossiers et immeubles | tables | colonne *Prêt Finances* avec le statut du dernier mois dû; boutons ⌖ Carte et *Modifier* (ouvre le panneau Terreno) |
+| Finances | dossier immeuble | valeur, capital garanti, LTV, dossiers et prêts reliés, arriérés, intérêts de l'année, cadastre, Street View |
+| Finances › Tableau de bord | « Répartition géographique » | capital garanti, arriérés et retards par ville; clic = centrer la carte |
+| Finances › Outils › Lettre d'approbation | « Remplir à partir d'un dossier » | lit les dossiers de la carte |
 
-**Option A — Live Server** (VS Code) :
-1. Installe l'extension "Live Server" (Ritwick Dey)
-2. Clic droit sur `index.html` → **Open with Live Server**
-
-**Option B — ligne de commande** :
-```bash
-python3 -m http.server 5500
-# ou
-npx serve
-```
-Puis ouvrir `http://localhost:5500/`.
-
-## Clés API
-
-Dans `js/config.js` :
-```js
-mapboxToken: "pk.YOUR_MAPBOX_TOKEN",
-googleKey:   "YOUR_GOOGLE_API_KEY",
-```
-
-Pense à restreindre les deux clés dans leur console respective avant de mettre en production.
-
-## Ajouter des données
-
-**Nouvel immeuble** : ajoute une entrée dans `data/properties.json` avec un `id` unique (ex: `P014`), les coordonnées et la valeur.
-
-**Nouveau prêt** : ajoute une entrée dans `data/loans.json` avec un `id` unique (ex: `L014`). Dans `collateral`, mets une ligne par immeuble en garantie, avec le montant et le rang. Assure-toi que chaque `propertyId` référencé existe bien dans `properties.json`.
-
-Reload la page : les index se reconstruisent automatiquement.
-
-## Exemple : le prêt de Valérie Parisé (déjà dans les données)
-
-L001 — Valérie Parisé, 325 000 $, garanti par 3 immeubles :
-- Maison de Carlos Mendes (P008) — 1re hypothèque de 150 000 $
-- Triplex de Valérie Parisé (P013) — 2e hypothèque de 100 000 $
-- Condo de Sophie Lavoie (P003) — 2e hypothèque de 75 000 $
-
-Va dans **Portfolio → Prêts**, clique sur la ligne « Valérie Parisé » — le panneau ouvre à droite et cadre les 3 immeubles sur la carte, avec un halo violet autour de chacun.
-
-## Sécurité
-
-Les données de prêt contiennent des informations financières et personnelles (noms d'emprunteurs, montants, taux). Ne pas commiter les fichiers `data/*.json` dans un repo public. Utiliser un `.gitignore` :
+## Fichiers ajoutés
 
 ```
-data/*.json
-!data/properties.example.json
+index.html        les deux apps dans une page (balisage Terreno + barre et colonne Finances)
+css/finances.css  styles de Terreno Finances, limités à la colonne finances et aux fenêtres
+css/app.css       disposition deux colonnes, blocs Finances dans les panneaux Terreno
+js/bridge.js      pont : dossiers/immeubles dérivés de state.loans/state.properties (window.TFDossiers),
+                  actions carte pour Finances (window.TMap), blocs Finances dans les panneaux, pins « en retard », thème
+js/finances.js    Terreno Finances (quelques crochets vers window.TMap)
+js/layout.js      modes Carte / Divisé / Finances, poignée de redimensionnement
+data/seed.js      données Finances initiales (classeur)
 ```
-
-Pour un usage réel multi-utilisateur avec authentification, il faudra migrer vers un backend (Supabase, Firebase, ou un serveur propre).

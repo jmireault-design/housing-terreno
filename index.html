@@ -1,22 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Terreno — Suivi des prêts garantis</title>
-
-  <link href="https://api.mapbox.com/mapbox-gl-js/v3.28.1/mapbox-gl.css" rel="stylesheet" />
-  <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.3/mapbox-gl-geocoder.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.17.0/dist/tabler-icons.min.css" rel="stylesheet" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-
-  <link rel="stylesheet" href="css/styles.css" />
-  <link rel="stylesheet" href="css/styles-addition.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Terreno</title>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.28.1/mapbox-gl.css" rel="stylesheet">
+<link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.3/mapbox-gl-geocoder.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.17.0/dist/tabler-icons.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/styles-addition.css">
+<link rel="stylesheet" href="css/finances.css">
+<link rel="stylesheet" href="css/app.css">
 </head>
-<body>
+<body data-mode="split">
 
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <img src="assets/logo.svg" alt="" class="brand-logo">
+      <div>
+        <div class="brand-name">Terren<span class="brand-o">o</span></div>
+        <div class="brand-sub" id="entity-name">9397-8187 Québec inc.</div>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="Sections">
+      <button data-view="dashboard" class="active">Tableau de bord</button>
+      <button data-view="bank" data-group="ops">Opérations <span class="tab-badge" id="tab-badge" hidden></span></button>
+      <button data-view="loans">Prêts</button>
+      <button data-view="dossiers">Dossiers et immeubles</button>
+      <button data-view="pnl" data-group="fin">États financiers</button>
+      <button data-view="forecast">Prévisions</button>
+      <button data-view="tools">Outils</button>
+      <button data-view="settings">Configuration</button>
+    </nav>
+    <div class="top-actions">
+      <span class="save-state" id="save-state"></span>
+      <button class="btn ghost theme-btn" id="btn-theme" type="button" title="Thème : automatique"><span class="theme-ico" aria-hidden="true">◐</span> <span class="theme-lbl">Auto</span></button>
+      <div class="seg mode-seg" id="mode-seg" role="group" aria-label="Disposition">
+        <button type="button" data-mode="map" title="Carte seulement">Carte</button>
+        <button type="button" data-mode="split" class="on" title="Carte et finances côte à côte">Divisé</button>
+        <button type="button" data-mode="fin" title="Finances seulement">Finances</button>
+      </div>
+      <button class="btn ghost wide-btn" id="btn-wide" type="button" aria-pressed="false" hidden><span aria-hidden="true">⇔</span> <span class="wide-lbl">Écran large</span></button>
+      <button class="btn primary" id="btn-new">+ Transaction</button>
+    </div>
+  </div>
+</header>
+
+<div class="app" id="app">
+  <aside id="map-col" aria-label="Terreno — carte, portfolio, taux">
 <div class="gt-app">
   <div class="gt-tabs">
     <div class="gt-logo"><img src="assets/logo.svg" alt="Terreno" class="gt-logo-img" style="width:44px;height:44px;min-width:44px;max-width:44px;vertical-align:middle;margin-right:12px;display:inline-block;" /><span style="font-size:24px;">Terren<span style="color:#2277B5;">o</span></span></div>
@@ -25,9 +60,7 @@
     <div class="gt-tab" data-view="dash"><i class="ti ti-chart-bar"></i> Tableau de bord</div>
     <div class="gt-tab" data-view="rates"><i class="ti ti-percentage"></i> Taux</div>
     <div class="gt-tab" data-view="settings"><i class="ti ti-settings"></i> Paramètres</div>
-    <button id="theme-toggle">
-      <i class="ti ti-moon"></i>
-    </button>
+    <button id="theme-toggle" hidden><i class="ti ti-moon"></i></button>
   </div>
 
   <!-- CARTE -->
@@ -351,15 +384,37 @@
     </div>
   </div>
 </div>
-
-<!-- PAGE DE PROFIL D'UN PRÊT (plein écran, pas juste le panneau latéral) -->
 <div class="gt-loan-profile-overlay" id="loan-profile-overlay">
   <div id="loan-profile-content"></div>
 </div>
+  </aside>
+  <div class="gutter" id="gutter" role="separator" aria-orientation="vertical" aria-label="Redimensionner"></div>
+  <main id="fin-col"><div id="view" class="wrap"></div></main>
+</div>
+
+<button class="btn primary float-map" id="float-map" type="button" hidden>⌖ Carte</button>
+
+<!-- Fenêtre de saisie (finances) -->
+<div class="modal" id="modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-head">
+      <h2 id="modal-title">Nouvelle transaction</h2>
+      <button class="icon-btn" id="modal-close" aria-label="Fermer">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<div class="doc-overlay" id="doc" hidden></div>
+<input type="file" id="file-import" accept="application/json,.json" hidden>
+<input type="file" id="file-csv" accept=".csv,text/csv" hidden>
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.28.1/mapbox-gl.js"></script>
 <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.3/mapbox-gl-geocoder.min.js"></script>
 
+<!-- Terreno (carte) -->
 <script src="js/config.js"></script>
 <script src="js/format.js"></script>
 <script src="js/state.js"></script>
@@ -373,5 +428,10 @@
 <script src="js/loan-profile.js"></script>
 <script src="js/app.js"></script>
 
+<!-- Pont carte ↔ finances, puis Terreno Finances -->
+<script src="js/bridge.js"></script>
+<script src="data/seed.js"></script>
+<script src="js/finances.js"></script>
+<script src="js/layout.js"></script>
 </body>
 </html>

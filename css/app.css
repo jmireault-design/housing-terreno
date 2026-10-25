@@ -1,0 +1,86 @@
+/* =====================================================================
+   app.css — disposition Terreno : carte (Terreno) à gauche, Finances à droite.
+   Les jetons de couleur et la typographie des finances viennent de finances.css,
+   ceux de la carte de terreno.css / terreno-addition.css.
+   ===================================================================== */
+:root { --map-w: 58%; --gutter: 6px; }
+html, body { height: 100%; }
+body { display: flex; flex-direction: column; overflow: hidden; }
+body::before { display: none; }
+
+/* ---------- barre du haut (finances.css fournit .top, .tabs, .btn…) ---------- */
+.top { flex: none; position: static; z-index: 20; }
+.top-inner { max-width: none; }
+.brand-logo { width: 34px; height: 34px; min-width: 34px; }
+.brand-name { font-size: 17px; }
+.brand-o { color: #2277B5; }
+.mode-seg button { padding: 5px 11px; font-size: 12.5px; }
+.top-actions { flex-wrap: wrap; }
+.save-state { max-width: 220px; }
+
+/* ---------- deux colonnes ---------- */
+.app { flex: 1; min-height: 0; display: grid; grid-template-columns: var(--map-w) var(--gutter) minmax(0, 1fr); }
+body[data-mode="map"] .app { grid-template-columns: 1fr 0 0; }
+body[data-mode="fin"] .app { grid-template-columns: 0 0 1fr; }
+body[data-mode="map"] #fin-col, body[data-mode="map"] .gutter, body[data-mode="fin"] #map-col, body[data-mode="fin"] .gutter { visibility: hidden; }
+#map-col { grid-column: 1; position: relative; min-width: 0; min-height: 0; overflow: hidden; background: var(--color-bg-primary, #fff); }
+#map-col .gt-app { height: 100%; }
+#map-col .gt-loan-profile-overlay { position: absolute; }
+.gutter { grid-column: 2; background: var(--line); cursor: col-resize; position: relative; z-index: 5; }
+.gutter:hover, .gutter.drag { background: var(--accent); }
+body.resizing { cursor: col-resize; user-select: none; }
+body.resizing #map-col, body.resizing #fin-col { pointer-events: none; }
+#fin-col { grid-column: 3; overflow-y: auto; overflow-x: hidden; min-width: 0; min-height: 0; background: var(--bg); }
+#fin-col .wrap { max-width: none; padding-block: 20px 64px; }
+body.wide .top-inner, body.wide .wrap { padding-left: 16px; padding-right: 16px; }
+
+/* Bouton flottant (téléphone) */
+.float-map { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); z-index: 40; box-shadow: 0 6px 20px rgb(0 0 0 / .25); border-radius: 99px; }
+
+/* ---------- blocs Finances injectés dans les panneaux Terreno ---------- */
+.tb-fin-wrap { margin: 6px 0 10px; }
+.tb-fin { display: flex; flex-direction: column; gap: 8px; }
+.tb-fin .gt-stat-grid { margin-bottom: 0; }
+.tb-fin-row { font-size: 12px; color: var(--color-text-secondary); }
+.tb-fin-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.tb-fin-actions button { margin: 0 !important; width: auto !important; }
+.tb-fin-loan { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 10px; border: 1px solid var(--color-border); border-radius: 10px; font-size: 13px; }
+.tb-fin-loan small { color: var(--color-text-tertiary); font-size: 11px; }
+.tb-fin-loan > span:last-child { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.tb-mini { padding: 2px 8px !important; font-size: 11px !important; margin: 0 !important; width: auto !important; }
+.tb-strip { display: flex; gap: 2px; }
+.tb-strip span { flex: 1; height: 6px; border-radius: 2px; background: var(--color-border); }
+.tb-strip .paid, .tb-strip .adjusted { background: #1f7a4d; } .tb-strip .over { background: #2d5b8a; }
+.tb-strip .partial { background: #d18a00; } .tb-strip .late { background: #c8302a; }
+.tb-fin-profile { max-width: 900px; margin: 12px auto; padding: 0 20px; }
+#map-col .pill { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 99px; font-size: 12px; font-weight: 500; white-space: nowrap; font-family: var(--font); }
+#map-col .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* ---------- vues Finances liées à la carte ---------- */
+.geo-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
+.geo-badge.none { color: var(--bad); }
+.ltv { display: inline-grid; grid-template-columns: 80px auto; align-items: center; gap: 8px; }
+.ltv-bar { height: 7px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.ltv-bar span { display: block; height: 100%; background: var(--accent); }
+.ltv-bar span.hi { background: var(--warn); } .ltv-bar span.vhi { background: var(--bad); }
+.coll-table td { vertical-align: middle; }
+.coll-table td:first-child { min-width: 210px; }
+.coll-table td:first-child .small { white-space: normal; }
+.ext-links { display: flex; gap: 6px; flex-wrap: wrap; }
+.ext-links a { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; color: var(--ink); text-decoration: none; background: var(--surface); font-size: 13px; }
+.ext-links a:hover { border-color: var(--accent); color: var(--accent); }
+.geo-city-table td.num { white-space: nowrap; }
+.geo-city-table tr.clickable:hover td { background: var(--accent-soft); }
+.loan-card .geo { margin-left: 6px; color: var(--accent); }
+table.dos-table td.dos-props-cell .btn { margin-top: 3px; }
+
+/* ---------- réactivité ---------- */
+@media (max-width: 900px) {
+  :root { --gutter: 0px; }
+  .mode-seg button[data-mode="split"] { display: none; }
+  body[data-mode="split"] .app { grid-template-columns: 0 0 1fr; }
+  body[data-mode="split"] #map-col { visibility: hidden; }
+  .gutter { visibility: hidden; }
+  .tabs { order: 10; width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+  .tabs button { white-space: nowrap; }
+}
